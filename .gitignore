@@ -423,4 +423,6 @@ healthchecksdb
 
 .DS_Store
 
+*.json
+
 lcov.info
