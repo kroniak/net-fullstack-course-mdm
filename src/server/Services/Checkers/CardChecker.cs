@@ -17,17 +17,7 @@ namespace Server.Services.Checkers
         /// <returns>Return <see langword="true" /> if card was emitted in Alfabank </returns>
         public bool CheckCardEmitter(string number)
         {
-			var bin = number.Substring(0, 6);
-			var alfabankBinList = new List<string>()
-			{
-				"415428",
-				"477964",
-				"521178",
-				"548601",
-				"548673",
-				"676371"
-			};
-			return alfabankBinList.Contains(bin);
+			return number.Substring(1, 3) == "234";
         }
 
         /// <inheritdoc />
