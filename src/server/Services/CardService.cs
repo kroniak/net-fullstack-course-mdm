@@ -14,6 +14,30 @@ namespace Server.Services
         /// </summary>
         /// <param name="number">card number in any format</param>
         /// <returns>Return enum CardType</returns>
-        public CardType GetCardType(string number) => throw new System.NotImplementedException();
+        public CardType GetCardType(string number)
+        {
+            switch(number[0])
+            {
+                case '2':
+                    return CardType.MIR;
+                case '4':
+                    return CardType.VISA;
+                case '3':
+                case '5':
+                case '6':
+                    switch(number[1])
+                    {
+                        case '0':
+                        case '6':
+                        case '7':
+                        case '8':
+                            return CardType.MAESTRO;
+                        default:
+                            return CardType.MASTERCARD;
+                    }
+                default:
+                    return CardType.OTHER;
+            }
+        }
     }
 }
