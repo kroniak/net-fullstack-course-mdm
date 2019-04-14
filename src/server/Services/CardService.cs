@@ -14,6 +14,10 @@ namespace Server.Services
         /// </summary>
         /// <param name="number">card number in any format</param>
         /// <returns>Return enum CardType</returns>
-        public CardType GetCardType(string number) => throw new System.NotImplementedException();
+        public CardType GetCardType(string number)
+        {
+            return (CardType)int.Parse(number.Substring(0,1));
+        } 
+
     }
 }

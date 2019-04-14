@@ -6,9 +6,10 @@ namespace Server.Infrastructure
     public enum CardType
     {
         OTHER = 0,
-        MASTERCARD = 1,
-        VISA = 2,
+        UNKNOW = 1,
+        MIR = 2,
         MAESTRO = 3,
-        MIR = 4
+        VISA = 4,
+        MASTERCARD = 5
     }
 }
