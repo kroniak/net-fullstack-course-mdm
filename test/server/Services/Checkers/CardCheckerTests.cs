@@ -1,3 +1,4 @@
+using System;
 using Server.Services.Checkers;
 using Xunit;
 
@@ -59,6 +60,17 @@ namespace ServerTest.Services.Checkers
             var cardWasEmittedByAlfabank = _cardChecker.CheckCardEmitter(value);
             // Assert
             Assert.True(cardWasEmittedByAlfabank);
+        }
+
+        [Fact]
+        public void CheckCardActivity_CardIsNull_ThrowException()
+        {
+            // Arrange
+            void Act() => _cardChecker.CheckCardActivity(null);
+            // Act
+            var ex = Record.Exception((Action) Act);
+            // Assert
+            Assert.IsType<NotImplementedException>(ex);
         }
     }
 }

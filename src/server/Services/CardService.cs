@@ -1,13 +1,12 @@
 using System;
+using Server.Exceptions;
 using Server.Infrastructure;
+using Server.Models;
 using Server.Services.Checkers;
 
 namespace Server.Services
 {
     /// <inheritdoc />
-    /// <summary>
-    /// Our implementing of the <see cref="T:Server.Services.ICardService" /> interface
-    /// </summary>
     public class CardService : ICardService
     {
         private readonly ICardChecker _cardChecker;
@@ -15,7 +14,7 @@ namespace Server.Services
         public CardService(ICardChecker cardChecker)
         {
             _cardChecker = cardChecker ??
-                           throw new ArgumentException(nameof(cardChecker));
+                           throw new CriticalException(nameof(cardChecker));
         }
 
         #region ICardService
@@ -51,6 +50,25 @@ namespace Server.Services
                     return CardType.OTHER;
             }
         }
+
+        /// <inheritdoc />
+        public string GenerateNewCardNumber(CardType cardType) => throw new NotImplementedException();
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Add bonus to new card when its opening
+        /// </summary>
+        /// <param name="card">Card to</param>
+        /// <returns>Return <see langword="True"/>if operation is successfully</returns>
+        public bool TryAddBonusOnOpen(Card card) => throw new NotImplementedException();
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Get balance of the card
+        /// </summary>
+        /// <param name="card">Card to calculating</param>
+        /// <returns><see langword="decimal" /> sum</returns>
+        public decimal GetBalanceOfCard(Card card) => throw new NotImplementedException();
 
         #endregion
     }

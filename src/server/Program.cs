@@ -1,17 +1,17 @@
-﻿using System;
-using Server.Services.Checkers;
+﻿using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Server
 {
-    class Program
+    public class Program
     {
-        private static readonly ICardChecker CardChecker = new CardChecker();
-
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            const string cardNumber = "1234 1234 1233 1234";
-            var result = CardChecker.CheckCardNumber(cardNumber);
-            Console.WriteLine($"Test for card {cardNumber} is {result}");
+            CreateWebHostBuilder(args).Build().Run();
         }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>();
     }
 }

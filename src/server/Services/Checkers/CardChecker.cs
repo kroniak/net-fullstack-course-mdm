@@ -1,14 +1,12 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Server.Infrastructure;
+using Server.Models;
 using Server.Services.Extensions;
 
 namespace Server.Services.Checkers
 {
-    /// <inheritdoc />
-    /// <summary>
-    /// Interface for checking numbers card types
-    /// </summary>
     public class CardChecker : ICardChecker
     {
         /// <inheritdoc />
@@ -54,6 +52,15 @@ namespace Server.Services.Checkers
         /// <returns>Return <see langword="true" /> if card was emitted in Alfabank </returns>
         public bool CheckCardEmitter(string number) =>
             CheckCardNumber(number) && Constants.AlfaBins.Any(number.StartsWith);
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Check Card expired or not
+        /// </summary>
+        /// <param name="card">Card for checking</param>
+        /// <returns>Return <see langword="true" /> if card is active</returns>
+        public bool CheckCardActivity(Card card) =>
+            throw new NotImplementedException();
 
         #region Utils
 
