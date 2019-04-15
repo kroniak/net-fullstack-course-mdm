@@ -422,7 +422,8 @@ ASALocalRun/
 healthchecksdb
 
 .DS_Store
-
-*.json
-
+.vscode/launch.json
+.vscode/tasks.json
 lcov.info
+out
+coverage.json
