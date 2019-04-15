@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,7 +29,10 @@ namespace Server.Services.Checkers
         /// <returns>Return <see langword="true"/> if card is valid</returns>
         public bool CheckCardNumber(string number)
         {
-            var numberList = number.ToCharArray().Select(x => (int)x).ToList();
+            var numberList = number
+				.ToArray()
+				.Select(x => Int32.Parse(x.ToString()))
+				.ToList();
             var startNumber = 0;
             if(number.Length % 2 != 0)
             {

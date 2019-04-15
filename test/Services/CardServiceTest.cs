@@ -16,14 +16,27 @@ namespace test.Services
 		}
 
 		[Fact]
-		public void GetCardType_RandomNumber_CardType()
+		public void GetCardType_RandomCardNumber_CardTypeMIR()
 		{
-			var fakeNumber = _generateOtherFakeData.GetNumberCard();
+			var fakeNumber = _generateOtherFakeData.GetNumberCard('2');
 			var service = new CardService();
 
 			var result = service.GetCardType(fakeNumber);
 
 			Assert.IsType<CardType>(result);
+			Assert.Equal(CardType.MIR, result);
+		}
+
+		[Fact]
+		public void GetCardType_RandomCardNumber_CardTypeVISA()
+		{
+			var fakeNumber = _generateOtherFakeData.GetNumberCard('4');
+			var service = new CardService();
+
+			var result = service.GetCardType(fakeNumber);
+
+			Assert.IsType<CardType>(result);
+			Assert.Equal(CardType.VISA, result);
 		}
 	}
 }
