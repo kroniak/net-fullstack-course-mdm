@@ -1,3 +1,5 @@
+using Server.Infrastructure;
+
 namespace Server.Models
 {
     /// <summary>
@@ -16,6 +18,24 @@ namespace Server.Models
         /// </summary>
         public string CardName { get; set; }
 
-        // TODO add fields
+        /// <summary>
+        /// Date close of the cards
+        /// </summary>
+        public string DateClose { get; set; }
+
+        /// <summary>
+        /// Card type
+        /// </summary>
+        public CardType CardType { get; set; }
+
+        /// <summary>
+        /// Currency of Card
+        /// </summary>
+        public Currency Currency { get; set; }
+
+        /// <summary>
+        /// Money of Card
+        /// </summary>
+        public double Money { get; set; }
     }
 }

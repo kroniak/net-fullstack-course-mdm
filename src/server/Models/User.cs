@@ -26,7 +26,5 @@ namespace Server.Models
         /// Getter user card list
         /// </summary>
         public List<Card> Cards { get; } = new List<Card>();
-
-        // TODO add fields
     }
 }
