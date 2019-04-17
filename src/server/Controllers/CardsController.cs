@@ -4,11 +4,13 @@ using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Server.Exceptions;
 using Server.Models;
+using Server.Models.DTO;
+using Server.Services;
 using Server.Services.Checkers;
 
 namespace Server.Controllers
 {
-    [Route("api/[controller]")]
+	[Route("api/[controller]")]
     public class CardsController : Controller
     {
         private readonly ICardChecker _cardChecker;
@@ -19,17 +21,14 @@ namespace Server.Controllers
                            throw new CriticalException(nameof(cardChecker));
         }
 
-        // GET api/cards
-        [HttpGet]
-        public ActionResult<IEnumerable<Card>> Get() => Ok(Enumerable.Repeat(new Card
-        {
-            CardName = "test card",
-            CardNumber = "4790878827491205"
-        }, 5));
+		// GET api/cards
+		[HttpGet]
+		public ActionResult<IEnumerable<CardDTO>> Get()
+			=> Ok(UserSingleton.User.Cards);
 
-        // GET api/cards/5334343434343...
-        [HttpGet("{number}")]
-        public ActionResult<Card> Get(string number)
+		// GET api/cards/5334343434343...
+		[HttpGet("{number}")]
+        public ActionResult<CardDTO> Get(string number)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

@@ -19,7 +19,10 @@ namespace Server.Infrastructure
         /// </summary>
         public static readonly string[] AlfaBins =
         {
-            "408396",
+			"231417",
+			"231727",
+			"234135",
+			"408396",
             "408397",
             "410584",
             "415400",

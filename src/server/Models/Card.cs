@@ -1,3 +1,6 @@
+using Server.Infrastructure;
+using System;
+
 namespace Server.Models
 {
     /// <summary>
@@ -16,6 +19,47 @@ namespace Server.Models
         /// </summary>
         public string CardName { get; set; }
 
-        // TODO add fields
-    }
+		private decimal _money;
+
+		/// <summary>
+		/// Money on the card
+		/// </summary>
+		public decimal Money
+		{
+			set
+			{
+				if (value < 1_000_000_000)
+				{
+					_money = value;
+				}
+			}
+			get { return _money; }
+		}
+
+		/// <summary>
+		/// Currency in which money
+		/// </summary>
+		public Currency Currency { get; set; }
+
+
+		private DateTime _validity;
+
+		/// <summary>
+		/// Card expiry date
+		/// </summary>
+		public DateTime Validity
+		{
+			set
+			{
+				if (value.Year > DateTime.Now.Year + 1)
+				{
+					_validity = value.Date;
+				}
+			}
+			get
+			{
+				return _validity;
+			}
+		}
+	}
 }

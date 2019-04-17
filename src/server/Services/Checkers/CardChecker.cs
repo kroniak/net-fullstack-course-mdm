@@ -53,14 +53,14 @@ namespace Server.Services.Checkers
         public bool CheckCardEmitter(string number) =>
             CheckCardNumber(number) && Constants.AlfaBins.Any(number.StartsWith);
 
-        /// <inheritdoc />
-        /// <summary>
-        /// Check Card expired or not
-        /// </summary>
-        /// <param name="card">Card for checking</param>
-        /// <returns>Return <see langword="true" /> if card is active</returns>
-        public bool CheckCardActivity(Card card) =>
-            throw new NotImplementedException();
+		/// <inheritdoc />
+		/// <summary>
+		/// Check Card expired or not
+		/// </summary>
+		/// <param name="card">Card for checking</param>
+		/// <returns>Return <see langword="true" /> if card is active</returns>
+		public bool CheckCardActivity(Card card) =>
+			(card != null) ? card.Validity >= DateTime.Today : throw new NotImplementedException();
 
         #region Utils
 

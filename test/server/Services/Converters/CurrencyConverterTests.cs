@@ -1,4 +1,5 @@
 using System;
+using Moq;
 using Server.Infrastructure;
 using Server.Services.Converters;
 using Xunit;
@@ -9,13 +10,13 @@ namespace ServerTest.Services.Converters
     {
         private readonly ICurrencyConverter _currencyConverter;
 
-        public CurrencyConverterTests(ICurrencyConverter currencyConverter)
+        public CurrencyConverterTests()
         {
-            _currencyConverter = currencyConverter;
+            _currencyConverter = new CurrencyConverter();
         }
 
         [Theory]
-        [InlineData(Currency.RUR, Currency.USD, 1000, "15.954052329291640076579451181")]
+        [InlineData(Currency.RUR, Currency.USD, 1000, "15,954052329291640076579451181")]
         [InlineData(Currency.EUR, Currency.RUR, 100, "7264")]
         [InlineData(Currency.RUR, Currency.RUR, 100, "100")]
         public void GetConvertSum_Passed(Currency from, Currency to, decimal valueIn, string valueOut)
