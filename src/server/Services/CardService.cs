@@ -3,6 +3,7 @@ using Server.Exceptions;
 using Server.Infrastructure;
 using Server.Models;
 using Server.Services.Checkers;
+using Server.Services.Converters;
 
 namespace Server.Services
 {
@@ -10,11 +11,21 @@ namespace Server.Services
     public class CardService : ICardService
     {
         private readonly ICardChecker _cardChecker;
+        private readonly ICurrencyConverter _currencyConverter;
 
         public CardService(ICardChecker cardChecker)
         {
             _cardChecker = cardChecker ??
                            throw new CriticalException(nameof(cardChecker));
+        }
+
+        public CardService(ICardChecker cardChecker, ICurrencyConverter currencyConverter)
+        {
+            _cardChecker = cardChecker ??
+                           throw new CriticalException(nameof(cardChecker));
+
+            _currencyConverter = currencyConverter ??
+                            throw new CriticalException(nameof(currencyConverter));
         }
 
         #region ICardService
@@ -60,7 +71,21 @@ namespace Server.Services
         /// </summary>
         /// <param name="card">Card to</param>
         /// <returns>Return <see langword="True"/>if operation is successfully</returns>
-        public bool TryAddBonusOnOpen(Card card) => throw new NotImplementedException();
+        public bool TryAddBonusOnOpen(ref Card card)
+        {
+            if (card == null) return false;
+            if (string.IsNullOrWhiteSpace(card.CardNumber)) return false;
+
+            if (!_cardChecker.CheckCardNumber(card.CardNumber)) return false;
+            
+            if(card.Currency == Currency.RUR) card.Money += 10;
+            else 
+            {
+                card.Money += _currencyConverter.GetConvertSum(10, Currency.RUR, card.Currency);
+            }
+
+            return true;
+        }
 
         /// <inheritdoc />
         /// <summary>
@@ -68,7 +93,16 @@ namespace Server.Services
         /// </summary>
         /// <param name="card">Card to calculating</param>
         /// <returns><see langword="decimal" /> sum</returns>
-        public decimal GetBalanceOfCard(Card card) => throw new NotImplementedException();
+        public decimal GetBalanceOfCard(Card card)
+        {
+            if (card == null) return 0;
+            if (string.IsNullOrWhiteSpace(card.CardNumber)) return 0;
+            // Необходима ли проверка на валидность, или уверены в корректности созданной карты
+            // А проверка на дату закрытия?
+            if (!_cardChecker.CheckCardNumber(card.CardNumber)) return 0;
+
+            return card.Money;
+        }
 
         #endregion
     }

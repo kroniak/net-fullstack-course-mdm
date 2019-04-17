@@ -3,6 +3,7 @@ using Server.Infrastructure;
 using Server.Models;
 using Server.Services;
 using Server.Services.Checkers;
+using Server.Services.Converters;
 using Xunit;
 
 namespace ServerTest.Services
@@ -17,7 +18,8 @@ namespace ServerTest.Services
         public CardServiceTest()
         {
             var cardCheckerMock = new Mock<ICardChecker>();
-            _cardService = new CardService(cardCheckerMock.Object);
+            var currencyConverterMock = new Mock<ICurrencyConverter>();
+            _cardService = new CardService(cardCheckerMock.Object, currencyConverterMock.Object);
         }
 
         [Theory]
@@ -44,7 +46,7 @@ namespace ServerTest.Services
                 CardName = "4790878827491205"
             };
             // Act
-            var addBonusOnOpenResult = _cardService.TryAddBonusOnOpen(card);
+            var addBonusOnOpenResult = _cardService.TryAddBonusOnOpen(ref card);
             // Assert
             var cardBalanceAfterAddingOfBonus = _cardService.GetBalanceOfCard(card);
             Assert.Equal(validCardBalanceAfterAddingOfBonus, cardBalanceAfterAddingOfBonus);

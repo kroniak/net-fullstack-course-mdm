@@ -36,6 +36,6 @@ namespace Server.Models
         /// <summary>
         /// Money of Card
         /// </summary>
-        public double Money { get; set; }
+        public decimal Money { get; set; }
     }
 }
