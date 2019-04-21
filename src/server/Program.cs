@@ -1,21 +1,17 @@
-﻿
-using Server.Services.Checkers;
-using System;
+﻿using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Server
 {
-  
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
-            Console.WriteLine("Alfalab C# test app");
-            CardChecker luhn_checks = new CardChecker();
-            Console.WriteLine("---" + luhn_checks.GetCardMII("5018878824195565"));
-
-            
-            Console.Write("Press <Enter>");
-            Console.ReadLine();
+            CreateWebHostBuilder(args).Build().Run();
         }
+
+        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+            WebHost.CreateDefaultBuilder(args)
+                .UseStartup<Startup>();
     }
 }
