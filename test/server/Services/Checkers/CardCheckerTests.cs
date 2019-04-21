@@ -1,4 +1,5 @@
 using System;
+using Server.Models;
 using Server.Services.Checkers;
 using Xunit;
 
@@ -71,6 +72,51 @@ namespace ServerTest.Services.Checkers
             var ex = Record.Exception((Action) Act);
             // Assert
             Assert.IsType<NotImplementedException>(ex);
+        }
+
+        [Theory]
+        [InlineData("01/01/1990")]
+        [InlineData("01/01/1970")]
+        [InlineData("01/01/2019")]
+        public void CheckCardActivity_CardIsActive_ReturnTrue(string value)
+        {
+            // Arrange
+            var validDate = DateTime.Parse(value);
+            var card = new Card()
+            {
+                DateClose = validDate
+            };
+            // Act
+            var cardWasActive = _cardChecker.CheckCardActivity(card);
+            // Assert
+            Assert.True(cardWasActive);
+        }
+
+        [Fact]
+        public void CheckCardActivity_DateNow_ReturnFalse()
+        {
+            // Arrange
+            var card = new Card()
+            {
+                DateClose = DateTime.Now.Date
+            };
+            // Act
+            var cardWasActive = _cardChecker.CheckCardActivity(card);
+            // Assert
+            Assert.False(cardWasActive);
+        }
+        [Fact]
+        public void CheckCardActivity_FutureDate_ReturnFalse()
+        {
+            // Arrange
+            var card = new Card()
+            {
+                DateClose = DateTime.Now.AddDays(1)
+            };
+            // Act
+            var cardWasActive = _cardChecker.CheckCardActivity(card);
+            // Assert
+            Assert.False(cardWasActive);
         }
     }
 }

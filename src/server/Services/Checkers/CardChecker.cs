@@ -59,8 +59,12 @@ namespace Server.Services.Checkers
         /// </summary>
         /// <param name="card">Card for checking</param>
         /// <returns>Return <see langword="true" /> if card is active</returns>
-        public bool CheckCardActivity(Card card) =>
-            throw new NotImplementedException();
+        public bool CheckCardActivity(Card card)
+        {
+            if(card == null) return false;
+            if(card.DateClose >= DateTime.Now.Date) return false;
+            return true;
+        }
 
         #region Utils
 

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Server.Infrastructure;
 
 namespace Server.Models
@@ -21,7 +24,9 @@ namespace Server.Models
         /// <summary>
         /// Date close of the cards
         /// </summary>
-        public string DateClose { get; set; }
+        [DataType(DataType.Date)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy}")]
+        public DateTime DateClose { get; set; }
 
         /// <summary>
         /// Card type
@@ -34,8 +39,8 @@ namespace Server.Models
         public Currency Currency { get; set; }
 
         /// <summary>
-        /// Money of Card
+        /// list Transaction
         /// </summary>
-        public decimal Money { get; set; }
+        public List<Transaction> Transactions { get; } = new List<Transaction>();
     }
 }

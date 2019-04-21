@@ -2,10 +2,10 @@ using Server.Infrastructure;
 
 namespace Server.Services.Converters
 {
-    public class CurrencyConverter
+    public class CurrencyConverter : ICurrencyConverter
     {
         /// <inheritdoc/>
-        decimal GetConvertSum(decimal sum, Currency from, Currency to)
+        public decimal GetConvertSum(decimal sum, Currency from, Currency to)
         {
             if(sum <= 0) return 0M;
             if(from == to) return sum;

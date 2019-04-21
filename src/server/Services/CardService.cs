@@ -11,21 +11,11 @@ namespace Server.Services
     public class CardService : ICardService
     {
         private readonly ICardChecker _cardChecker;
-        private readonly ICurrencyConverter _currencyConverter;
 
         public CardService(ICardChecker cardChecker)
         {
             _cardChecker = cardChecker ??
                            throw new CriticalException(nameof(cardChecker));
-        }
-
-        public CardService(ICardChecker cardChecker, ICurrencyConverter currencyConverter)
-        {
-            _cardChecker = cardChecker ??
-                           throw new CriticalException(nameof(cardChecker));
-
-            _currencyConverter = currencyConverter ??
-                            throw new CriticalException(nameof(currencyConverter));
         }
 
         #region ICardService
@@ -71,17 +61,29 @@ namespace Server.Services
         /// </summary>
         /// <param name="card">Card to</param>
         /// <returns>Return <see langword="True"/>if operation is successfully</returns>
-        public bool TryAddBonusOnOpen(ref Card card)
+        public bool TryAddBonusOnOpen(Card card)
         {
             if (card == null) return false;
-            if (string.IsNullOrWhiteSpace(card.CardNumber)) return false;
-
-            if (!_cardChecker.CheckCardNumber(card.CardNumber)) return false;
             
-            if(card.Currency == Currency.RUR) card.Money += 10;
+            if(card.Currency == Currency.RUR) 
+            {
+                card.Transactions.Add(new Transaction() 
+                {
+                    Date = DateTime.Now,
+                    Money = 10M,
+                    CardFrom = card,
+                    CardTo = card
+                });
+            }
             else 
             {
-                card.Money += _currencyConverter.GetConvertSum(10, Currency.RUR, card.Currency);
+                card.Transactions.Add(new Transaction() 
+                {
+                    Date = DateTime.Now,
+                    Money = new CurrencyConverter().GetConvertSum(10, Currency.RUR, card.Currency),
+                    CardFrom = card,
+                    CardTo = card
+                });
             }
 
             return true;
@@ -96,12 +98,14 @@ namespace Server.Services
         public decimal GetBalanceOfCard(Card card)
         {
             if (card == null) return 0;
-            if (string.IsNullOrWhiteSpace(card.CardNumber)) return 0;
-            // Необходима ли проверка на валидность, или уверены в корректности созданной карты
-            // А проверка на дату закрытия?
-            if (!_cardChecker.CheckCardNumber(card.CardNumber)) return 0;
-
-            return card.Money;
+            
+            var balance = 0M;
+            
+            foreach(var transaction in card.Transactions)
+            {
+                balance += transaction.Money;
+            }
+            return balance;
         }
 
         #endregion

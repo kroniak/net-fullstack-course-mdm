@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Server.Infrastructure;
 
 namespace Server.Models
@@ -25,11 +26,15 @@ namespace Server.Models
         /// <summary>
         /// Transaction Money
         /// </summary>
-        public double Money { get;set; }
+        [Required]
+        [Range(0, 99999999.99)]
+        public decimal Money { get;set; }
 
         /// <summary>
         /// Transaction Date
         /// </summary>
-        public string Date { get;set; }
+        [DataType(DataType.Date)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy}")]
+        public System.DateTime Date { get;set; }
     }
 }

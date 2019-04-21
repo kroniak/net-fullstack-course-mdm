@@ -27,7 +27,7 @@ namespace Server.Services
         /// </summary>
         /// <param name="card">Card to</param>
         /// <returns>Return <see langword="bool"/> if operation is successfully</returns>
-        bool TryAddBonusOnOpen(ref Card card);
+        bool TryAddBonusOnOpen(Card card);
 
         /// <summary>
         /// Get balance of the card

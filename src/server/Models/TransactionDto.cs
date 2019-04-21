@@ -1,34 +1,36 @@
-namespace Server.Models
-{
-    public class TransactionDto
-    {
-        /// <summary>
-        /// Transaction user name 
-        /// </summary>
-        public string UserName { get;set; }
+using System.ComponentModel.DataAnnotations;
 
+namespace Server.Models {
+    public class TransactionDto {
         /// <summary>
-        /// Transaction Card Number From
+        /// Transaction user
         /// </summary>
-        /// 
-        /// Обезличенная
-        public string CardNumberFrom { get;set; }
+        public User User { get; set; }
 
         /// <summary>
         /// Transaction Card To
         /// </summary>
         /// 
         /// Обезличенная
-        public string CardNumberTo { get;set; }
+        public Card CardTo { get; set; }
+
+        /// <summary>
+        /// Transaction Card From
+        /// </summary>
+        /// 
+        /// Обезличенная
+        public Card CardFrom { get; set; }
 
         /// <summary>
         /// Transaction Money
         /// </summary>
-        public double Money { get;set; }
+        [Required]
+        [Range (0, 99999999.99)]
+        public double Money { get; set; }
 
         /// <summary>
         /// Transaction Date
         /// </summary>
-        public string Date { get;set; }
+        public string Date { get; set; }
     }
 }

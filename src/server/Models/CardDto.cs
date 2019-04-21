@@ -7,20 +7,10 @@ namespace Server.Models
     /// </summary>
     public class CardDto
     {
-        private string _cardNumber;
-        public string CardNumber { 
-            get
-            {
-                // Придумать способ замены символов на звездочки с 5 по 12
-                return _cardNumber;
-            }
-            set { _cardNumber = value; }
-        }
-        
         /// <summary>
-        /// Short name of the cards
+        /// Card Number
         /// </summary>
-        public string CardName { get; set; }
+        public string CardNumber {get; set;}
         
         /// <summary>
         /// Card type

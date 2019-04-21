@@ -19,7 +19,7 @@ namespace ServerTest.Services
         {
             var cardCheckerMock = new Mock<ICardChecker>();
             var currencyConverterMock = new Mock<ICurrencyConverter>();
-            _cardService = new CardService(cardCheckerMock.Object, currencyConverterMock.Object);
+            _cardService = new CardService(cardCheckerMock.Object);
         }
 
         [Theory]
@@ -36,20 +36,24 @@ namespace ServerTest.Services
             Assert.Equal(validCardType, cardType);
         }
 
-        [Fact]
-        public void AddBonusOnOpen_CardBalanceContainsBonus()
+        [Theory]
+        [InlineData(Currency.RUR, "10")]
+        [InlineData(Currency.EUR, "0,1376651982378854625550660793")]
+        [InlineData(Currency.USD, "0,1595405232929164007657945118")]
+        public void AddBonusOnOpen_CardBalanceContainsBonus(Currency cardCurrency, string valueOut)
         {
             // Arrange
-            const decimal validCardBalanceAfterAddingOfBonus = 10M;
+            var validBalance = System.Convert.ToDecimal(valueOut);
             var card = new Card
             {
-                CardName = "4790878827491205"
+                CardNumber = "4790878827491205",
+                Currency = cardCurrency
             };
             // Act
-            var addBonusOnOpenResult = _cardService.TryAddBonusOnOpen(ref card);
+            var addBonusOnOpenResult = _cardService.TryAddBonusOnOpen(card);
             // Assert
             var cardBalanceAfterAddingOfBonus = _cardService.GetBalanceOfCard(card);
-            Assert.Equal(validCardBalanceAfterAddingOfBonus, cardBalanceAfterAddingOfBonus);
+            Assert.Equal(validBalance, cardBalanceAfterAddingOfBonus);
             Assert.True(addBonusOnOpenResult);
         }
     }
