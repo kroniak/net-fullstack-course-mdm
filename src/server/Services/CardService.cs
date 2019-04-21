@@ -52,7 +52,16 @@ namespace Server.Services
         }
 
         /// <inheritdoc />
-        public string GenerateNewCardNumber(CardType cardType) => throw new NotImplementedException();
+        public string GenerateNewCardNumber(CardType cardType)
+        {
+            Random rnd = new Random();
+            int cardNumber1 = rnd.Next(4572, 4999);
+            int cardNumber2 = rnd.Next(1000, 9999);
+            int cardNumber3 = rnd.Next(1000, 9999);
+            int cardNumber4 = rnd.Next(1000, 9999);
+            string num = cardNumber1.ToString() + cardNumber2.ToString() + cardNumber3.ToString() + cardNumber4.ToString();
+            return num;
+        }
 
         /// <inheritdoc />
         /// <summary>

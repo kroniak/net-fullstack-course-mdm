@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Server.Models;
+using Server.Models.Dto;
 
 namespace Server.Data
 {
@@ -18,5 +19,6 @@ namespace Server.Data
         /// </summary>
         /// <param name="cardNumber">number of the cards</param>
         Card GetCard(string cardNumber);
+        bool PostCard(InputDataDtoCards CardPost);
     }
 }

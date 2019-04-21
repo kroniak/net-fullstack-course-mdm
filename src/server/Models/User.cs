@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Server.Models
 {
@@ -8,24 +10,23 @@ namespace Server.Models
     /// </summary>
     public class User
     {
-        public User(string userName)
-        {
-            // TODO return own Exception class
-            if (string.IsNullOrWhiteSpace(userName))
-                throw new Exception("username is null or empty");
-
-            UserName = userName;
-        }
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
 
         /// <summary>
         /// Getter and setter username of the user for login
         /// </summary>
-        public string UserName { get; private set; }
+        [Required]
+        [MaxLength(100)]
+        public string UserName { get;  set; }
+        [Required]
+        [MaxLength(100)]
+        public string UserPasport { get; set; }
 
         /// <summary>
         /// Getter user card list
         /// </summary>
-        public List<Card> Cards { get; } = new List<Card>();
+
 
         // TODO add fields
     }

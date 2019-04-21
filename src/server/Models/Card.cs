@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace Server.Models
 {
     /// <summary>
@@ -6,16 +11,31 @@ namespace Server.Models
     public class Card
     {
         /// <summary>
-        /// Card number.
+        /// Card 
         /// </summary>
-        /// <returns>string card number representation</returns>
+        /// <returns>string card  DB</returns>
+
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int Id { get; set; }
+        [Required]
+        [MaxLength(50)]
         public string CardNumber { get; set; }
 
         /// <summary>
         /// Short name of the cards
         /// </summary>
+        [Required]
+        [MaxLength(100)]
         public string CardName { get; set; }
+        /// <summary>
+        /// Valid date of the cards
+        /// </summary>
+        public DateTime CardValidDate { get; set; }
+
+        public int UserId { get; set; } // внешний ключ
+        public User Users { get; set; }  // навигационное свойство
 
         // TODO add fields
     }
+
 }
