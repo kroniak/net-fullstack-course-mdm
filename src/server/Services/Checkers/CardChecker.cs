@@ -7,21 +7,17 @@ using Server.Services.Extensions;
 
 namespace Server.Services.Checkers
 {
+    /// <inheritdoc />
     public class CardChecker : ICardChecker
     {
         /// <inheritdoc />
-        /// <summary>
-        /// Check card number by Lun algorithm
-        /// </summary>
-        /// <param name="number">card number in any format</param>
-        /// <returns>Return <see langword="true" /> if card is valid</returns>
         public bool CheckCardNumber(string number)
         {
             if (string.IsNullOrWhiteSpace(number)) return false;
 
             var cardNumber = number.ToNormalizedCardNumber();
 
-            if (cardNumber.Length < 12 && cardNumber.Length > 19) return false;
+            if (cardNumber.Length < 12 || cardNumber.Length > 19) return false;
 
             var intNumbers = CreateIntCollectionFromString(cardNumber);
 
@@ -45,22 +41,11 @@ namespace Server.Services.Checkers
         }
 
         /// <inheritdoc />
-        /// <summary>
-        /// Check card number by Alfabank emitter property
-        /// </summary>
-        /// <param name="number">card number in any format</param>
-        /// <returns>Return <see langword="true" /> if card was emitted in Alfabank </returns>
         public bool CheckCardEmitter(string number) =>
             CheckCardNumber(number) && Constants.AlfaBins.Any(number.StartsWith);
 
         /// <inheritdoc />
-        /// <summary>
-        /// Check Card expired or not
-        /// </summary>
-        /// <param name="card">Card for checking</param>
-        /// <returns>Return <see langword="true" /> if card is active</returns>
-        public bool CheckCardActivity(Card card) =>
-            throw new NotImplementedException();
+        public bool CheckCardActivity(Card card) => !(card.DtOpenCard.AddYears(card.ValidityYear) <= DateTime.Today);
 
         #region Utils
 

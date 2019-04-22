@@ -1,62 +1,123 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.ComponentModel.DataAnnotations;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
-using Server.Exceptions;
+using Server.Data.Interfaces;
+using Server.Infrastructure;
 using Server.Models;
+using Server.Models.Dto;
+using Server.Models.Factories;
 using Server.Services.Checkers;
+using Server.Services.Interfaces;
 
+// ReSharper disable PossibleMultipleEnumeration
 namespace Server.Controllers
 {
+    [ApiController]
     [Route("api/[controller]")]
-    public class CardsController : Controller
+    [BindProperties]
+    public class CardsController : ControllerBase
     {
+        private readonly IUserRepository _userRepository;
+        private readonly ICardRepository _cardRepository;
         private readonly ICardChecker _cardChecker;
+        private readonly IDtoValidationService _dtoValidationService;
+        private readonly IBankService _bankService;
+        private readonly IDtoFactory<Card, CardGetDto> _dtoFactory;
 
-        public CardsController(ICardChecker cardChecker)
+        [ExcludeFromCodeCoverage]
+        public CardsController(IDtoValidationService dtoValidationService,
+            ICardRepository cardRepository,
+            IUserRepository userRepository,
+            ICardChecker cardChecker, IBankService bankService,
+            IDtoFactory<Card, CardGetDto> dtoFactory)
         {
-            _cardChecker = cardChecker ??
-                           throw new CriticalException(nameof(cardChecker));
+            _dtoValidationService = dtoValidationService ??
+                                    throw new ArgumentNullException(nameof(dtoValidationService));
+            _cardRepository = cardRepository ?? throw new ArgumentNullException(nameof(cardRepository));
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _cardChecker = cardChecker ?? throw new ArgumentNullException(nameof(cardChecker));
+            _bankService = bankService ?? throw new ArgumentNullException(nameof(bankService));
+            _dtoFactory = dtoFactory ?? throw new ArgumentNullException(nameof(dtoFactory));
         }
 
         // GET api/cards
         [HttpGet]
-        public ActionResult<IEnumerable<Card>> Get() => Ok(Enumerable.Repeat(new Card
+        public ActionResult<IEnumerable<CardGetDto>> Get()
         {
-            CardName = "test card",
-            CardNumber = "4790878827491205"
-        }, 5));
+            // Select
+            var cards = _cardRepository.GetCards(_userRepository.GetCurrentUser());
+
+            // Mapping
+            var cardsDto = _dtoFactory.Map(cards, TryValidateModel);
+
+            // Return
+            return Ok(cardsDto);
+        }
 
         // GET api/cards/5334343434343...
         [HttpGet("{number}")]
-        public ActionResult<Card> Get(string number)
+        public ActionResult<CardGetDto> Get([CreditCard] string number)
         {
+            // Validate
+            if (!_cardChecker.CheckCardEmitter(number))
+                ModelState.AddModelError("number", "This card number is invalid");
+
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            if (!_cardChecker.CheckCardEmitter(number))
-                return BadRequest("This card number is invalid");
+            // Select
+            var card = _cardRepository.GetCard(_userRepository.GetCurrentUser(), number);
 
-            var card = new Card
-            {
-                CardName = "test card",
-                CardNumber = number
-            };
+            // Mapping
+            var dto = _dtoFactory.Map(card, TryValidateModel);
 
-            if (card == null) return NotFound("Card with this number not found");
+            // Validate
+            if (dto == null) return NotFound();
 
-            return Ok(card);
+            return Ok(dto);
         }
 
         // POST api/cards
         [HttpPost]
-        public IActionResult Post([FromBody] string cardType) =>
-            throw new NotImplementedException();
+        public ActionResult<CardGetDto> Post([FromBody] CardPostDto value)
+        {
+            // Validate
+            var validateResult = _dtoValidationService.ValidateOpenCardDto(value);
+            if (validateResult.HasErrors()) ModelState.AddErrors(validateResult);
 
-        // DELETE api/cards/5
-        [HttpDelete("{number}")]
-        public IActionResult Delete(string number) => StatusCode(405);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-        //TODO PUT method
+            // Select
+            var (card, openResult) = _bankService.TryOpenNewCard(
+                _userRepository.GetCurrentUser(),
+                value.Name,
+                (Currency) value.Currency,
+                (CardType) value.Type);
+
+            if (openResult.HasErrors())
+            {
+                ModelState.AddErrors(openResult);
+                return BadRequest(ModelState);
+            }
+
+            // Mapping
+            var dto = _dtoFactory.Map(card, TryValidateModel);
+
+            // Validate
+            if (dto == null) return BadRequest("Не удалось выпустить карту");
+
+            return Created($"/api/cards/{dto.Number}", dto);
+        }
+
+        // DELETE api/cards
+        [HttpDelete]
+        public IActionResult Delete() => StatusCode(405);
+
+        // PUT api/cards
+        [HttpPut]
+        public IActionResult Put() => StatusCode(405);
     }
 }

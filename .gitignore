@@ -425,5 +425,6 @@ healthchecksdb
 .vscode/launch.json
 .vscode/tasks.json
 lcov.info
-out
 coverage.json
+out
+**/launchSettings.json

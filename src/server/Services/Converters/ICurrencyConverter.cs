@@ -2,6 +2,9 @@
 
 namespace Server.Services.Converters
 {
+    /// <summary>
+    /// Service for currency conversion
+    /// </summary>
     public interface ICurrencyConverter
     {
         /// <summary>
@@ -11,6 +14,6 @@ namespace Server.Services.Converters
         /// <param name="from">Convert from this currency</param>
         /// <param name="to">Convert to this currency</param>
         /// <returns>Converted sum on <see langword="decimal"/></returns>
-        decimal GetConvertSum(decimal sum, Currency from, Currency to);
+        decimal GetConvertedSum(decimal sum, Currency from, Currency to);
     }
 }

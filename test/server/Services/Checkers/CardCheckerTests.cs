@@ -1,5 +1,7 @@
-using System;
 using Server.Services.Checkers;
+using ServerTest.Mocks;
+using ServerTest.Mocks.Services;
+using ServerTest.Utils;
 using Xunit;
 
 namespace ServerTest.Services.Checkers
@@ -11,13 +13,32 @@ namespace ServerTest.Services.Checkers
     {
         private readonly ICardChecker _cardChecker = new CardChecker();
 
+        private readonly TestDataGenerator _testDataGenerator;
+
+        public CardCheckerTests()
+        {
+            var cardService = new CardServiceMockFactory().MockObject();
+            var generatorService = new CardNumberGeneratorMockFactory().MockObject();
+            _testDataGenerator = new TestDataGenerator(cardService, generatorService);
+        }
+
+        /// <summary>
+        /// Check if this cards numbers is valid
+        /// </summary>
         [Theory]
         [InlineData("4083967629457310")]
         [InlineData("5395 0290 0902 1990")]
         [InlineData("   4978 588211036789    ")]
+        public void CheckCardNumber_CorrectNumber_ReturnTrue(string value) =>
+            Assert.True(_cardChecker.CheckCardNumber(value));
+
+        [Theory]
+        [InlineData("4083967629457310")]
+        [InlineData("5395 0290 0902 1990")]
+        [InlineData("   4978 588211036789    ")]
+        [InlineData("2203572242903770")]
         public void CheckCardNumber_CardNumberIsInvalid_ReturnTrue(string cardNumber)
         {
-            // Arrange
             // Act
             var cardIsValid = _cardChecker.CheckCardNumber(cardNumber);
             // Assert
@@ -26,12 +47,12 @@ namespace ServerTest.Services.Checkers
 
         [Theory]
         [InlineData("1234 1234 1233 1234")]
+        [InlineData("1234 1234 1233 1234 1234 1234 1234")]
         [InlineData("12341233123")]
         [InlineData("")]
         [InlineData(null)]
         public void CheckCardNumber_CardNumberIsInvalid_ReturnFalse(string cardNumber)
         {
-            // Arrange
             // Act
             var cardIsValid = _cardChecker.CheckCardNumber(cardNumber);
             // Assert
@@ -41,9 +62,10 @@ namespace ServerTest.Services.Checkers
         [Theory]
         [InlineData("5395029009021990")]
         [InlineData("4978588211036789")]
+        [InlineData("1234 1234 1233 1234")]
+        [InlineData("1234 1234 1233 1234 1234 1234 1234")]
         public void CheckCardEmitted_CardWasNotEmittedByAlfabank_ReturnFalse(string value)
         {
-            // Arrange
             // Act
             var cardWasEmittedByAlfabank = _cardChecker.CheckCardEmitter(value);
             // Assert
@@ -55,7 +77,6 @@ namespace ServerTest.Services.Checkers
         [InlineData("5101265622568232")]
         public void CheckCardEmitted_CardWasEmittedByAlfabank_ReturnTrue(string value)
         {
-            // Arrange
             // Act
             var cardWasEmittedByAlfabank = _cardChecker.CheckCardEmitter(value);
             // Assert
@@ -63,14 +84,25 @@ namespace ServerTest.Services.Checkers
         }
 
         [Fact]
-        public void CheckCardActivity_CardIsNull_ThrowException()
+        public void CheckCardActivity_CorrectCard_ReturnTrue()
         {
             // Arrange
-            void Act() => _cardChecker.CheckCardActivity(null);
+            var card = _testDataGenerator.GenerateFakeCard();
             // Act
-            var ex = Record.Exception((Action) Act);
+            var cardIsActivity = _cardChecker.CheckCardActivity(card);
             // Assert
-            Assert.IsType<NotImplementedException>(ex);
+            Assert.True(cardIsActivity);
+        }
+
+        [Fact]
+        public void CheckCardActivity_CorrectCard_ReturnFalse()
+        {
+            // Arrange
+            var card = _testDataGenerator.GenerateFakeValidityCard();
+            // Act
+            var cardActivity = _cardChecker.CheckCardActivity(card);
+            // Assert
+            Assert.False(cardActivity);
         }
     }
 }

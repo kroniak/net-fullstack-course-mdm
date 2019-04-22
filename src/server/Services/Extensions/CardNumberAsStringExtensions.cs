@@ -19,5 +19,14 @@ namespace Server.Services.Extensions
 
             return resultNumbers.ToString();
         }
+
+        public static string CardNumberWatermark(this string number)
+        {
+            if (string.IsNullOrWhiteSpace(number)) return null;
+
+            var result = number.Substring(0, 4);
+            result = result + "XXXXXXXX";
+            return result + number.Substring(number.Length - 4, 4);
+        }
     }
 }

@@ -1,8 +1,9 @@
 using System;
-using Server.Exceptions;
 using Server.Infrastructure;
 using Server.Models;
 using Server.Services.Checkers;
+using Server.Services.Converters;
+using Server.Services.Interfaces;
 
 namespace Server.Services
 {
@@ -10,21 +11,17 @@ namespace Server.Services
     public class CardService : ICardService
     {
         private readonly ICardChecker _cardChecker;
+        private readonly ICurrencyConverter _currencyConverter;
 
-        public CardService(ICardChecker cardChecker)
+        public CardService(ICardChecker cardChecker, ICurrencyConverter currencyConverter)
         {
             _cardChecker = cardChecker ??
-                           throw new CriticalException(nameof(cardChecker));
+                           throw new ArgumentNullException(nameof(cardChecker));
+            _currencyConverter = currencyConverter ??
+                                 throw new ArgumentNullException(nameof(currencyConverter));
         }
 
-        #region ICardService
-
         /// <inheritdoc />
-        /// <summary>
-        /// Get card type by card number
-        /// </summary>
-        /// <param name="number">card number in any format</param>
-        /// <returns>Return enum CardType</returns>
         public CardType GetCardType(string number)
         {
             if (!_cardChecker.CheckCardNumber(number)) return CardType.OTHER;
@@ -52,24 +49,23 @@ namespace Server.Services
         }
 
         /// <inheritdoc />
-        public string GenerateNewCardNumber(CardType cardType) => throw new NotImplementedException();
+        public bool TryAddBonusOnOpen(Card card)
+        {
+            try
+            {
+                card.Transactions.Add(new Transaction
+                {
+                    Card = card,
+                    CardToNumber = card.CardNumber,
+                    Sum = _currencyConverter.GetConvertedSum(10M, Currency.RUR, card.Currency)
+                });
+            }
+            catch (Exception)
+            {
+                return false;
+            }
 
-        /// <inheritdoc />
-        /// <summary>
-        /// Add bonus to new card when its opening
-        /// </summary>
-        /// <param name="card">Card to</param>
-        /// <returns>Return <see langword="True"/>if operation is successfully</returns>
-        public bool TryAddBonusOnOpen(Card card) => throw new NotImplementedException();
-
-        /// <inheritdoc />
-        /// <summary>
-        /// Get balance of the card
-        /// </summary>
-        /// <param name="card">Card to calculating</param>
-        /// <returns><see langword="decimal" /> sum</returns>
-        public decimal GetBalanceOfCard(Card card) => throw new NotImplementedException();
-
-        #endregion
+            return true;
+        }
     }
 }
