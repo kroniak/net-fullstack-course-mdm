@@ -26,21 +26,5 @@ namespace Server.Models.DTO
 		/// Short name of the cards.
 		/// </summary>
 		public string CardName { get; set; }
-
-		/// <summary>
-		/// Money on the card.
-		/// </summary>		
-		[Range(0, 1_000_000_000, ErrorMessage = "Money have invalid value")]
-		public decimal Money { get; set; }
-
-		/// <summary>
-		/// Currency in which money.
-		/// </summary>
-		public Currency Currency { get; set; }
-
-		/// <summary>
-		/// Card expiry date.
-		/// </summary>
-		public DateTime Validity { get; set; }
 	}
 }

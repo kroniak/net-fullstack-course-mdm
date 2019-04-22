@@ -1,5 +1,6 @@
 using Server.Infrastructure;
 using System;
+using System.Collections.Generic;
 
 namespace Server.Models
 {
@@ -61,5 +62,7 @@ namespace Server.Models
 				return _validity;
 			}
 		}
+
+		public List<Transaction> Transaction { get; set; } = new List<Transaction>();
 	}
 }

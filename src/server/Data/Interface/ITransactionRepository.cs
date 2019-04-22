@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-namespace Server.Data
+namespace Server.Data.Interface
 {
     /// <summary>
     /// Repository for getting and setting transactions from storage
@@ -13,6 +14,6 @@ namespace Server.Data
         /// <param name="cardNumber"></param>
         /// <param name="from">from range</param>
         /// <param name="to">to range</param>
-        IEnumerable<object> GetTransactions(string cardNumber, int from, int to);
+        IEnumerable<object> GetTransactions(string cardNumber, DateTime from, DateTime to);
     }
 }

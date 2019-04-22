@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Server.Models;
 
-namespace Server.Data
+namespace Server.Data.Interface
 {
     /// <summary>
     /// Repository for getting and setting card from storage

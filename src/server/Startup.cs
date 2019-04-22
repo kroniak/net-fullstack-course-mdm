@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using Server.Models;
+using Server.Data.Implementation;
+using Server.Data.Interface;
+using Server.Services;
 using Server.Services.Checkers;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -18,7 +20,9 @@ namespace Server
 				c.SwaggerDoc("v1", new Info { Title = "My API", Version = "v1" });
 			});
 			services.AddScoped<ICardChecker, CardChecker>();
-			services.AddSingleton<User>();
+			services.AddScoped<ICardService, CardService>();
+			services.AddTransient<ICardRepository, CardRepository>();
+			services.AddSingleton<DataBase>();
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 

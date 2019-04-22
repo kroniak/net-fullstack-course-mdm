@@ -17,6 +17,11 @@ namespace Server.Models
             UserName = userName;
         }
 
+		public User(string userName, Card card) : this(userName)
+		{
+			Cards.Add(card);
+		}
+
         /// <summary>
         /// Getter and setter username of the user for login
         /// </summary>

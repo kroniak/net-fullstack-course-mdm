@@ -102,7 +102,13 @@ namespace Server.Services
 			}
 			var moneyOnCard = card.Money;
 			card.Money += 10;
-			return moneyOnCard != card.Money;
+			if (moneyOnCard != card.Money)
+			{
+				card.Transaction.Add(new Transaction { Money = 10, TransactionTime = DateTime.Now });
+				return true;
+			}
+
+			return false;
 		}
 
 		/// <inheritdoc />
