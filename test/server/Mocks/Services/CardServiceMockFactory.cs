@@ -1,6 +1,6 @@
 using Moq;
-using Server.Models;
-using Server.Services.Interfaces;
+using Models;
+using Business.Services.Interfaces;
 
 namespace ServerTest.Mocks.Services
 {

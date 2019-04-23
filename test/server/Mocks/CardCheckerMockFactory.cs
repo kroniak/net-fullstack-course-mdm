@@ -1,6 +1,6 @@
 using System;
 using Moq;
-using Server.Services.Checkers;
+using Business.Services.Checkers;
 
 namespace ServerTest.Mocks
 {

@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
-using Server.Data.Interfaces;
-using Server.Infrastructure;
-using Server.Models;
-using Server.Models.Dto;
-using Server.Models.Factories;
-using Server.Services.Checkers;
-using Server.Services.Interfaces;
+using Business.Data.Interfaces;
+using Models.Infrastructure;
+using Models;
+using Models.Dto;
+using Business.Factories;
+using Business.Services.Checkers;
+using Business.Services.Interfaces;
+using Business;
+using AutoMapper;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace Server.Controllers
@@ -49,11 +51,11 @@ namespace Server.Controllers
             // Select
             var cards = _cardRepository.GetCards(_userRepository.GetCurrentUser());
 
-            // Mapping
-            var cardsDto = _dtoFactory.Map(cards, TryValidateModel);
+			// Mapping
+			var cardsDto = _dtoFactory.Map(cards, TryValidateModel);
 
-            // Return
-            return Ok(cardsDto);
+			// Return
+			return Ok(cardsDto);
         }
 
         // GET api/cards/5334343434343...
@@ -69,12 +71,12 @@ namespace Server.Controllers
 
             // Select
             var card = _cardRepository.GetCard(_userRepository.GetCurrentUser(), number);
+			
+			// Mapping
+			var dto = _dtoFactory.Map(card, TryValidateModel);
 
-            // Mapping
-            var dto = _dtoFactory.Map(card, TryValidateModel);
-
-            // Validate
-            if (dto == null) return NotFound();
+			// Validate
+			if (dto == null) return NotFound();
 
             return Ok(dto);
         }
@@ -103,11 +105,11 @@ namespace Server.Controllers
                 return BadRequest(ModelState);
             }
 
-            // Mapping
-            var dto = _dtoFactory.Map(card, TryValidateModel);
+			// Mapping
+			var dto = _dtoFactory.Map(card, TryValidateModel);
 
-            // Validate
-            if (dto == null) return BadRequest("Не удалось выпустить карту");
+			// Validate
+			if (dto == null) return BadRequest("Не удалось выпустить карту");
 
             return Created($"/api/cards/{dto.Number}", dto);
         }

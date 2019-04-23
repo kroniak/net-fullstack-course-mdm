@@ -1,5 +1,5 @@
 using Moq;
-using Server.Services.Interfaces;
+using Business.Services.Interfaces;
 
 namespace ServerTest.Mocks.Services
 {

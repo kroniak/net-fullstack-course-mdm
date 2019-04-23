@@ -1,7 +1,7 @@
 using System.Linq;
 using Moq;
-using Server.Data.Interfaces;
-using Server.Models;
+using Business.Data.Interfaces;
+using Models;
 
 namespace ServerTest.Mocks.Data
 {

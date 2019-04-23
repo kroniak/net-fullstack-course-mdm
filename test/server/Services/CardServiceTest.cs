@@ -1,10 +1,10 @@
 using System;
 using Moq;
-using Server.Infrastructure;
-using Server.Models;
-using Server.Services;
-using Server.Services.Converters;
-using Server.Services.Interfaces;
+using Models.Infrastructure;
+using Models;
+using Business.Services;
+using Business.Services.Converters;
+using Business.Services.Interfaces;
 using ServerTest.Mocks;
 using ServerTest.Utils;
 using Xunit;

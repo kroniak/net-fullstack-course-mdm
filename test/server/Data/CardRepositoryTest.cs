@@ -1,9 +1,9 @@
 using System.Linq;
 using Moq;
-using Server.Data;
-using Server.Data.Interfaces;
-using Server.Models;
-using Server.Services.Interfaces;
+using Business.Data;
+using Business.Data.Interfaces;
+using Models;
+using Business.Services.Interfaces;
 using ServerTest.Mocks;
 using ServerTest.Mocks.Services;
 using ServerTest.Utils;

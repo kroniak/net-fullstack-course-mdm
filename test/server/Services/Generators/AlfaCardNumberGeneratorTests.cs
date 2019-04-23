@@ -1,9 +1,9 @@
-using Server.Infrastructure;
-using Server.Services.Checkers;
-using Server.Services.Generators;
-using Server.Services.Interfaces;
-using Server.Services;
-using Server.Services.Converters;
+using Models.Infrastructure;
+using Business.Services.Checkers;
+using Business.Services.Generators;
+using Business.Services.Interfaces;
+using Business.Services;
+using Business.Services.Converters;
 using Xunit;
 
 namespace ServerTest.Services.Generators

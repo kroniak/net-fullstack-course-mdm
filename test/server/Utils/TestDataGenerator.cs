@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Server.Data.Interfaces;
-using Server.Infrastructure;
-using Server.Models;
-using Server.Models.Dto;
-using Server.Services.Extensions;
-using Server.Services.Interfaces;
+using Business.Data.Interfaces;
+using Models.Infrastructure;
+using Models;
+using Models.Dto;
+using Business.Extensions;
+using Business.Services.Interfaces;
 
 namespace ServerTest.Utils
 {

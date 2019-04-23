@@ -1,9 +1,9 @@
 using System.Linq;
 using Moq;
-using Server.Models.Dto;
-using Server.Services;
-using Server.Services.Checkers;
-using Server.Services.Interfaces;
+using Models.Dto;
+using Business.Services;
+using Business.Services.Checkers;
+using Business.Services.Interfaces;
 using ServerTest.Mocks;
 using ServerTest.Utils;
 using Xunit;

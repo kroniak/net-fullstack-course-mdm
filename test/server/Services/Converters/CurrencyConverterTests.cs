@@ -1,7 +1,7 @@
 using System;
 using System.Globalization;
-using Server.Infrastructure;
-using Server.Services.Converters;
+using Models.Infrastructure;
+using Business.Services.Converters;
 using Xunit;
 
 namespace ServerTest.Services.Converters

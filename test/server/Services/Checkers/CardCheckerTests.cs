@@ -1,4 +1,4 @@
-using Server.Services.Checkers;
+using Business.Services.Checkers;
 using ServerTest.Mocks;
 using ServerTest.Mocks.Services;
 using ServerTest.Utils;

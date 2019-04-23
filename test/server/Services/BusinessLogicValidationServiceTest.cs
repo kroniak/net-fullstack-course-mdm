@@ -1,9 +1,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Moq;
-using Server.Services;
-using Server.Services.Checkers;
-using Server.Services.Interfaces;
+using Business.Services;
+using Business.Services.Checkers;
+using Business.Services.Interfaces;
 using ServerTest.Mocks;
 using ServerTest.Mocks.Services;
 using ServerTest.Utils;

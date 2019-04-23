@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.AspNetCore.Mvc;
-using Server.Data.Interfaces;
-using Server.Infrastructure;
-using Server.Models;
-using Server.Models.Dto;
-using Server.Models.Factories;
-using Server.Services.Checkers;
-using Server.Services.Extensions;
-using Server.Services.Interfaces;
+using Business.Data.Interfaces;
+using Models.Infrastructure;
+using Models;
+using Models.Dto;
+using Business.Factories;
+using Business.Services.Checkers;
+using Business.Extensions;
+using Business.Services.Interfaces;
+using AutoMapper;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace Server.Controllers
@@ -65,11 +66,11 @@ namespace Server.Controllers
                 skip,
                 10);
 
-            // Mapping
-            var transactionsDto = _dtoFactory.Map(transactions, TryValidateModel);
+			// Mapping
+			var transactionsDto = _dtoFactory.Map(transactions, TryValidateModel);
 
-            // Return
-            return Ok(transactionsDto);
+			// Return
+			return Ok(transactionsDto);
         }
 
         // POST api/transactions
@@ -98,10 +99,10 @@ namespace Server.Controllers
 
             var cardFromNumber = value.From.ToNormalizedCardNumber();
 
-            var dto = _dtoFactory.Map(transaction, TryValidateModel);
+			var dto = _dtoFactory.Map(transaction, TryValidateModel);
 
-            // Validate
-            if (dto == null) return BadRequest("Transferring error");
+			// Validate
+			if (dto == null) return BadRequest("Transferring error");
 
             return Created($"/transactions/{cardFromNumber}", dto);
         }

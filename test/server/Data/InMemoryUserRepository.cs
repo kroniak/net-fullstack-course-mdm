@@ -1,6 +1,6 @@
 using Moq;
-using Server.Data;
-using Server.Data.Interfaces;
+using Business.Data;
+using Business.Data.Interfaces;
 using ServerTest.Mocks;
 using ServerTest.Mocks.Data;
 using ServerTest.Mocks.Services;

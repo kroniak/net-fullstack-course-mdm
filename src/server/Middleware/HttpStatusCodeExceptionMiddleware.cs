@@ -4,7 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Server.Exceptions;
+using Models.Exceptions;
 
 namespace Server.Middleware
 {
