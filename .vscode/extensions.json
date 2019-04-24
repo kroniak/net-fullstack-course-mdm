@@ -1,0 +1,33 @@
+{
+  // See http://go.microsoft.com/fwlink/?LinkId=827846
+  // for the documentation about the extensions.json format
+  "recommendations": [
+    "PKief.material-icon-theme",
+    "PeterJausovec.vscode-docker",
+    "WallabyJs.quokka-vscode",
+    "dbaeumer.vscode-eslint",
+    "discountry.react-redux-react-router-snippets",
+    "eamodio.gitlens",
+    "esbenp.prettier-vscode",
+    "formulahendry.dotnet-test-explorer",
+    "joelday.docthis",
+    "joshpeng.sublime-babel-vscode",
+    "joshpeng.theme-onedark-sublime",
+    "k--kato.docomment",
+    "ms-vscode.csharp",
+    "msjsdiag.debugger-for-chrome",
+    "quicktype.quicktype",
+    "xabikos.JavaScriptSnippets",
+    "leopotam.csharpfixformat",
+    "wesbos.theme-cobalt2",
+    "streetsidesoftware.code-spell-checker",
+    "ryanluker.vscode-coverage-gutters",
+    "dbaeumer.vscode-eslint",
+    "donjayamanne.githistory",
+    "eamodio.gitlens",
+    "orta.vscode-jest",
+    "andys8.jest-snippets",
+    "discountry.react-redux-react-router-snippets"
+    // Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
+  ]
+}
