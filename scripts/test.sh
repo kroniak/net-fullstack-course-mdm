@@ -10,6 +10,6 @@ SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 echo "!!WARNING!! This script for pipeline test running and checking code coverage for netstandard and netcoreapp targets"
 
-dotnet test -c Release /p:CollectCoverage=true /p:Threshold=70 \
+dotnet test -c Release /p:CollectCoverage=true /p:Threshold=90 \
 /p:Exclude="[xunit.*]*" \
-"${SCRIPT_ROOT}/../test/server/"
+"${SCRIPT_ROOT}/../test/server/Server.Test"

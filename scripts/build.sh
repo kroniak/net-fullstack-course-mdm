@@ -14,4 +14,4 @@ echo "!!WARNING!! This script only builds netstandard and netcoreapp targets"
 
 dotnet restore -v m "${NETSTANDARD_SLN}"
 
-dotnet publish -c Release -o "${SCRIPT_ROOT}/../out" "${SCRIPT_ROOT}/../src/server/" 
+dotnet publish -c Release -o "${SCRIPT_ROOT}/../out" "${SCRIPT_ROOT}/../src/server/AlfaBank.WebApi" 

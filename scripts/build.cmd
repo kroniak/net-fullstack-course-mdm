@@ -7,7 +7,7 @@ exit /b 1
 echo Restoring dependencies was successful.
 )
 
-@set project=..\src\server\
+@set project=..\src\server\AlfaBank.WebApi
 
 @call dotnet build -c Release %project%
 
