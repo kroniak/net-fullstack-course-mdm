@@ -18,8 +18,6 @@ namespace AlfaBank.WebApi
         public static IWebHostBuilder CreateWebHostBuilder(string[] args)
         {
             var configuration = new ConfigurationBuilder()
-                // -- This configuration (and Environment and Json) and  was enabled automatically 
-                //.AddCommandLine(args) 
                 .Build();
 
             return WebHost
