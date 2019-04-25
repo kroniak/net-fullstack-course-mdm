@@ -7,4 +7,4 @@ WORKDIR /app
 COPY --from=build /app/out .
 RUN ls -la
 EXPOSE 59722
-CMD ["dotnet","1.dll"]
+ENTRYPOINT ["dotnet","1.dll"]
