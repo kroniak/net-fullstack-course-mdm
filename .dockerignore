@@ -1,0 +1,15 @@
+.git
+.gitignore
+.idea
+src/client
+**/*.info
+**/*.log
+**/*.md
+**/*.user
+.DS_Store
+.dockerignore
+.vscode
+Dockerfile
+**/bin
+**/obj
+out
