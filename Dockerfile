@@ -1,9 +1,14 @@
-FROM mcr.microsoft.com/dotnet/core/sdk:2.2 AS build
+FROM microsoft/dotnet:2.2-sdk AS build
+
+# copy
 WORKDIR /app
 COPY . .
-RUN dotnet restore && dotnet publish -c Release -o out 
-FROM mcr.microsoft.com/dotnet/core/runtime:2.2 AS runtime
+RUN ./scripts/test.sh &&\
+ ./scripts/build.sh
+ 
+FROM microsoft/dotnet:2.2-aspnetcore-runtime AS runtime
 WORKDIR /app
-COPY --from=build /app/out .
-EXPOSE 59722
-ENTRYPOINT ["dotnet","1.dll"]
+COPY --from=build /app/out ./
+ENV ASPNETCORE_URLS=http://+:5000
+EXPOSE 5000
+ENTRYPOINT ["dotnet", "AlfaBank.WebApi.dll"]
