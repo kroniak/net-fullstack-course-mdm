@@ -1,0 +1,8 @@
+version: '3'
+services:
+    mdm_middle_layer:
+        build: .
+        ports:
+         -  "5002:81"
+        environment:
+         - ASPNETCORE_ENVIRONMENT=Development
