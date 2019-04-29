@@ -1,7 +1,7 @@
+﻿using AlfaBank.Services.Checkers;
+using Moq;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using AlfaBank.Services.Checkers;
-using Moq;
 
 namespace Server.Test.Mocks
 {
@@ -35,7 +35,7 @@ namespace Server.Test.Mocks
             {
                 "1234 1234 1233 1234",
                 "1234123412331234",
-                "",
+                string.Empty,
                 null,
                 "5395029009021990",
                 "4978588211036789",

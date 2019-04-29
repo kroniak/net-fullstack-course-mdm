@@ -1,7 +1,7 @@
-using System.Diagnostics.CodeAnalysis;
-using AlfaBank.Core.Data.Interfaces;
+﻿using AlfaBank.Core.Data.Interfaces;
 using AlfaBank.Core.Models;
 using Moq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Server.Test.Mocks.Data
 {

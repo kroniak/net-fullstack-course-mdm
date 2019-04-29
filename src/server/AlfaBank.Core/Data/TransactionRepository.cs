@@ -29,5 +29,34 @@ namespace AlfaBank.Core.Data
 
             return transactions;
         }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Get count transaction at last hour by user
+        /// </summary>
+        /// <param name="user">Current logged user</param>
+        /// <returns>Transaction count</returns>
+        public int CountLastHour(User user)
+        {
+            var startDateTime = DateTime.Now.AddHours(-1);
+            var endDateTime = DateTime.Now;
+
+            return Count(user, t => t.DateTime >= startDateTime && t.DateTime < endDateTime);
+        }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Get count transaction by user by filter
+        /// </summary>
+        /// <param name="user">Current logged user</param>
+        /// <param name="filter">filter for transaction</param>
+        /// <returns>Transaction count</returns>
+        public int Count(User user, Func<Transaction, bool> filter)
+        {
+            var cards = _cardRepository.All(user);
+
+            return cards.SelectMany(card => card.Transactions)
+                .Where(filter).Count();
+        }
     }
 }

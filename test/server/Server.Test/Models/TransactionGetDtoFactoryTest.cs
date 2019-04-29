@@ -1,5 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
-using AlfaBank.Core.Exceptions;
+﻿using AlfaBank.Core.Exceptions;
 using AlfaBank.Core.Infrastructure;
 using AlfaBank.Core.Models;
 using AlfaBank.Core.Models.Dto;
@@ -7,6 +6,7 @@ using AlfaBank.Core.Models.Factories;
 using Server.Test.Mocks;
 using Server.Test.Mocks.Services;
 using Server.Test.Utils;
+using System.Diagnostics.CodeAnalysis;
 using Xunit;
 
 // ReSharper disable PossibleMultipleEnumeration
@@ -32,12 +32,13 @@ namespace Server.Test.Models
         public void Map_ReturnValidDto()
         {
             // Arrange
-            var fakeCard = _testDataGenerator.GenerateFakeCard(new CardPostDto
-            {
-                Name = "my card",
-                Currency = (int) Currency.RUR,
-                Type = (int) CardType.MAESTRO
-            });
+            var fakeCard = _testDataGenerator.GenerateFakeCard(
+                new CardPostDto
+                {
+                    Name = "my card",
+                    Currency = (int)Currency.RUR,
+                    Type = (int)CardType.MAESTRO
+                });
             var fakeTransaction = TestDataGenerator.GenerateFakeTransaction(fakeCard);
 
             // Act
@@ -54,12 +55,13 @@ namespace Server.Test.Models
         public void Map_NullCard_ThrowException()
         {
             // Arrange
-            var fakeCard = _testDataGenerator.GenerateFakeCard(new CardPostDto
-            {
-                Name = "my card",
-                Currency = (int) Currency.RUR,
-                Type = (int) CardType.MAESTRO
-            });
+            var fakeCard = _testDataGenerator.GenerateFakeCard(
+                new CardPostDto
+                {
+                    Name = "my card",
+                    Currency = (int)Currency.RUR,
+                    Type = (int)CardType.MAESTRO
+                });
             var fakeTransaction = TestDataGenerator.GenerateFakeTransaction(fakeCard);
             fakeTransaction.Card = null;
 
@@ -71,12 +73,13 @@ namespace Server.Test.Models
         public void Map_ValidateFail_ReturnNull()
         {
             // Arrange
-            var fakeCard = _testDataGenerator.GenerateFakeCard(new CardPostDto
-            {
-                Name = "my card",
-                Currency = (int) Currency.RUR,
-                Type = (int) CardType.MAESTRO
-            });
+            var fakeCard = _testDataGenerator.GenerateFakeCard(
+                new CardPostDto
+                {
+                    Name = "my card",
+                    Currency = (int)Currency.RUR,
+                    Type = (int)CardType.MAESTRO
+                });
             var fakeTransaction = TestDataGenerator.GenerateFakeTransaction(fakeCard);
 
             // Act
@@ -90,12 +93,13 @@ namespace Server.Test.Models
         public void Map_ReturnValidDtoList()
         {
             // Arrange
-            var fakeCard = _testDataGenerator.GenerateFakeCard(new CardPostDto
-            {
-                Name = "my card",
-                Currency = (int) Currency.RUR,
-                Type = (int) CardType.MAESTRO
-            });
+            var fakeCard = _testDataGenerator.GenerateFakeCard(
+                new CardPostDto
+                {
+                    Name = "my card",
+                    Currency = (int)Currency.RUR,
+                    Type = (int)CardType.MAESTRO
+                });
             var fakeTransactions = TestDataGenerator.GenerateFakeTransactions(fakeCard);
 
             // Act
@@ -103,25 +107,28 @@ namespace Server.Test.Models
 
             // Assert
             Assert.NotEmpty(dtoList);
-            Assert.All(dtoList, dto =>
-            {
-                Assert.Equal(10M, dto.Sum);
-                Assert.Equal("4083XXXXXXXX6239", dto.To);
-                Assert.Equal(fakeCard.CardNumber, dto.From);
-                Assert.False(dto.IsCredit);
-            });
+            Assert.All(
+                dtoList,
+                dto =>
+                {
+                    Assert.Equal(10M, dto.Sum);
+                    Assert.Equal("4083XXXXXXXX6239", dto.To);
+                    Assert.Equal(fakeCard.CardNumber, dto.From);
+                    Assert.False(dto.IsCredit);
+                });
         }
 
         [Fact]
         public void Map_ValidateFail_ReturnEmptyList()
         {
             // Arrange
-            var fakeCard = _testDataGenerator.GenerateFakeCard(new CardPostDto
-            {
-                Name = "my card",
-                Currency = (int) Currency.RUR,
-                Type = (int) CardType.MAESTRO
-            });
+            var fakeCard = _testDataGenerator.GenerateFakeCard(
+                new CardPostDto
+                {
+                    Name = "my card",
+                    Currency = (int)Currency.RUR,
+                    Type = (int)CardType.MAESTRO
+                });
             var fakeTransactions = TestDataGenerator.GenerateFakeTransactions(fakeCard);
 
             // Act

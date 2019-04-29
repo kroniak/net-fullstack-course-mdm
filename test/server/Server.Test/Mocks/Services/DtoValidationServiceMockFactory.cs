@@ -1,6 +1,6 @@
-using System.Diagnostics.CodeAnalysis;
-using AlfaBank.Services.Interfaces;
+﻿using AlfaBank.Services.Interfaces;
 using Moq;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Server.Test.Mocks.Services
 {

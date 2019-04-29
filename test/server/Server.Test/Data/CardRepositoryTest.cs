@@ -1,6 +1,4 @@
-using System.Collections.Generic;
-using System.Linq;
-using AlfaBank.Core.Data;
+﻿using AlfaBank.Core.Data;
 using AlfaBank.Core.Data.Interfaces;
 using AlfaBank.Core.Models;
 using AlfaBank.Services.Interfaces;
@@ -8,6 +6,7 @@ using Moq;
 using Server.Test.Mocks;
 using Server.Test.Mocks.Services;
 using Server.Test.Utils;
+using System.Linq;
 using Xunit;
 
 // ReSharper disable PossibleMultipleEnumeration
@@ -20,7 +19,6 @@ namespace Server.Test.Data
 
         private readonly Card _card;
         private readonly User _user;
-        private readonly IEnumerable<Card> _cards;
 
         private readonly ICardRepository _cardRepository;
 
@@ -32,9 +30,9 @@ namespace Server.Test.Data
 
             _cardRepository = new CardRepository();
 
-            _cards = _testDataGenerator.GenerateFakeCards();
-            _card = _cards.First();
-            _user = TestDataGenerator.GenerateFakeUser(_cards);
+            var cards = _testDataGenerator.GenerateFakeCards();
+            _card = cards.First();
+            _user = TestDataGenerator.GenerateFakeUser(cards);
         }
 
         [Fact]
@@ -44,12 +42,13 @@ namespace Server.Test.Data
             var cards = _cardRepository.All(_user);
 
             // Assert
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.AtMost(3));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(3));
 
             Assert.Equal(3, cards.Count());
-            Assert.All(cards, c =>
-                Assert.Single(c.Transactions)
-            );
+            Assert.All(
+                cards,
+                c =>
+                    Assert.Single(c.Transactions));
         }
 
         [Fact]
@@ -59,7 +58,7 @@ namespace Server.Test.Data
             var card = _cardRepository.Get(_user, _card.CardNumber);
 
             // Assert
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.AtMost(3));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(3));
 
             Assert.Single(card.Transactions);
             Assert.Equal(_card.ValidityYear, card.ValidityYear);
@@ -79,15 +78,15 @@ namespace Server.Test.Data
             var card = _cardRepository.Get(_user, cardDto.CardNumber);
 
             // Assert
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.AtMost(4));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(4));
             Assert.Null(card);
         }
 
         [Fact]
         public void AddCard_NullCard_NoCardAdded()
         {
-            // Arrange 
-            var expected = _cards.Count();
+            // Arrange
+            var expected = _user.Cards.Count;
 
             // Act
             _cardRepository.Add(_user, null);
@@ -99,8 +98,8 @@ namespace Server.Test.Data
         [Fact]
         public void AddCard_ExistCard_NoCardAdded()
         {
-            // Arrange 
-            var expected = _cards.Count();
+            // Arrange
+            var expected = _user.Cards.Count;
 
             // Act
             _cardRepository.Add(_user, _card);
@@ -112,12 +111,12 @@ namespace Server.Test.Data
         [Fact]
         public void AddCard_NewCard_CardAdded()
         {
-            // Arrange 
-            var expected = _cards.Count();
-            var cardDto = _testDataGenerator.GenerateFakeCard("4790878827491205");
+            // Arrange
+            var expected = _user.Cards.Count;
+            var card = _testDataGenerator.GenerateFakeCard("4790878827491205");
 
             // Act
-            _cardRepository.Add(_user, cardDto);
+            _cardRepository.Add(_user, card);
 
             // Assert
             Assert.Contains(_card, _user.Cards);
@@ -127,8 +126,8 @@ namespace Server.Test.Data
         [Fact]
         public void RemoveCard_NullCard_NoCardRemoved()
         {
-            // Arrange 
-            var expected = _cards.Count();
+            // Arrange
+            var expected = _user.Cards.Count;
 
             // Act
             _cardRepository.Remove(_user, null);
@@ -140,11 +139,12 @@ namespace Server.Test.Data
         [Fact]
         public void RemoveCard_ExistCard_CardRemoved()
         {
-            // Arrange 
-            var expected = _cards.Count();
-
+            // Arrange
+            var expected = _user.Cards.Count;
+            var card = _testDataGenerator.GenerateFakeCard(_card.CardNumber);
+            
             // Act
-            _cardRepository.Remove(_user, _card);
+            _cardRepository.Remove(_user, card);
 
             // Assert
             Assert.Equal(expected - 1, _user.Cards.Count);
@@ -153,12 +153,12 @@ namespace Server.Test.Data
         [Fact]
         public void RemoveCard_NonExistCard_NoCardDeleted()
         {
-            // Arrange 
-            var expected = _cards.Count();
-            var cardDto = _testDataGenerator.GenerateFakeCard("4790878827491205");
+            // Arrange
+            var expected = _user.Cards.Count;
+            var card = _testDataGenerator.GenerateFakeCard("4790878827491205");
 
             // Act
-            _cardRepository.Remove(_user, cardDto);
+            _cardRepository.Remove(_user, card);
 
             // Assert
             Assert.Equal(expected, _user.Cards.Count);

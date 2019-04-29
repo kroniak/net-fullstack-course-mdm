@@ -69,5 +69,42 @@ namespace AlfaBank.Services
 
             return true;
         }
+
+        /// <inheritdoc />
+        /// <summary>
+        /// Try to charge tariff from card
+        /// </summary>
+        /// <param name="card">Card from</param>
+        /// <param name="tariff">Tariff in RUB</param>
+        /// <returns>Return <see langword="bool" /> if operation is successfully</returns>
+        public bool TryTariffCharge(Card card, decimal tariff)
+        {
+            if (tariff <= 0M)
+            {
+                return false;
+            }
+
+            try
+            {
+                var tariffInCurrency = _currencyConverter.GetConvertedSum(tariff, Currency.RUR, card.Currency);
+                if (card.Balance >= tariffInCurrency)
+                    card.Transactions.Add(new Transaction
+                    {
+                        Card = card,
+                        CardFromNumber = card.CardNumber,
+                        Sum = tariffInCurrency
+                    });
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+
+            return true;
+        }
     }
 }

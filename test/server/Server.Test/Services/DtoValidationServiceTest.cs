@@ -1,22 +1,22 @@
-using System.Linq;
-using AlfaBank.Core.Models.Dto;
+﻿using AlfaBank.Core.Models.Dto;
 using AlfaBank.Services;
 using AlfaBank.Services.Checkers;
 using AlfaBank.Services.Interfaces;
 using Moq;
 using Server.Test.Mocks;
 using Server.Test.Utils;
+using System.Linq;
 using Xunit;
 
 namespace Server.Test.Services
 {
     public class DtoValidationServiceTest
     {
-        private readonly IDtoValidationService _dtoValidationService;
-        private readonly Mock<ICardChecker> _cardCheckerMock;
-
         private const string WrongCardNumber = "4790878827491205123";
         private const string TrueCardNumber = "4790878827491205";
+
+        private readonly IDtoValidationService _dtoValidationService;
+        private readonly Mock<ICardChecker> _cardCheckerMock;
 
         public DtoValidationServiceTest()
         {
@@ -142,7 +142,7 @@ namespace Server.Test.Services
             var errors = _dtoValidationService.ValidateTransferDto(transaction);
 
             // Assert
-            _cardCheckerMock.Verify(x => x.CheckCardEmitter(TrueCardNumber), Times.AtMost(2));
+            _cardCheckerMock.Verify(x => x.CheckCardEmitter(TrueCardNumber), Times.Exactly(2));
             Assert.Single(errors);
             Assert.Equal("from", errors.First().FieldName);
             Assert.Equal("From card and to card is Equal", errors.First().Message);

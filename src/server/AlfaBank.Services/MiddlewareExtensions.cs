@@ -16,25 +16,28 @@ namespace AlfaBank.Services
     [ExcludeFromCodeCoverage]
     public static class MiddlewareExtensions
     {
-        public static void AddAlfaBankServices(this IServiceCollection services)
+        public static IServiceCollection AddAlfaBankServices(this IServiceCollection services)
         {
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
 
-            services.AddTransient<ICurrencyConverter, CurrencyConverter>();
-            services.AddTransient<ICardChecker, CardChecker>();
-            services.AddTransient<ICardService, CardService>();
-            services.AddTransient<IBusinessLogicValidationService, BusinessLogicValidationService>();
-            services.AddTransient<IDtoValidationService, DtoValidationService>();
-            services.AddTransient<IBankService, BankService>();
-            services.AddTransient<ICardRepository, CardRepository>();
-            services.AddTransient<ITransactionRepository, TransactionRepository>();
-            services.AddTransient<ICardNumberGenerator, AlfaCardNumberGenerator>();
-            services.AddTransient<IDtoFactory<Card, CardGetDto>, CardGetDtoFactory>();
-            services.AddTransient<IDtoFactory<Transaction, TransactionGetDto>, TransactionGetDtoFactory>();
+            services
+                .AddTransient<ICurrencyConverter, CurrencyConverter>()
+                .AddTransient<ICardChecker, CardChecker>()
+                .AddTransient<ICardService, CardService>()
+                .AddTransient<IBusinessLogicValidationService, BusinessLogicValidationService>()
+                .AddTransient<IDtoValidationService, DtoValidationService>()
+                .AddTransient<IBankService, BankService>()
+                .AddTransient<ICardRepository, CardRepository>()
+                .AddTransient<ITransactionRepository, TransactionRepository>()
+                .AddTransient<ICardNumberGenerator, AlfaCardNumberGenerator>()
+                .AddTransient<IDtoFactory<Card, CardGetDto>, CardGetDtoFactory>()
+                .AddTransient<IDtoFactory<Transaction, TransactionGetDto>, TransactionGetDtoFactory>();
+
+            return services;
         }
 
-        public static void AddInMemoryUserStorage(this IServiceCollection services)
+        public static IServiceCollection AddInMemoryUserStorage(this IServiceCollection services)
         {
             if (services == null)
                 throw new ArgumentNullException(nameof(services));
@@ -42,6 +45,8 @@ namespace AlfaBank.Services
             var user = GenerateUser();
 
             services.AddSingleton<IUserRepository>(new InMemoryUserRepository(user));
+
+            return services;
         }
 
         /// <summary>

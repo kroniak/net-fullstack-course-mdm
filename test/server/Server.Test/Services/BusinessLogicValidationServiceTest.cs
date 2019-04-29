@@ -1,17 +1,15 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using AlfaBank.Services;
+﻿using AlfaBank.Services;
 using AlfaBank.Services.Checkers;
 using AlfaBank.Services.Interfaces;
 using Moq;
 using Server.Test.Mocks;
 using Server.Test.Mocks.Services;
 using Server.Test.Utils;
+using System.Linq;
 using Xunit;
 
 namespace Server.Test.Services
 {
-    [SuppressMessage("ReSharper", "PossibleMultipleEnumeration")]
     public class BusinessLogicValidationServiceTest
     {
         private readonly Mock<ICardChecker> _cardCheckerMock;
@@ -62,7 +60,7 @@ namespace Server.Test.Services
             var result = _businessLogicValidationService.ValidateTransfer(card, card, 1);
 
             // Assert
-            _cardCheckerMock.Verify(x => x.CheckCardActivity(card), Times.AtMost(2));
+            _cardCheckerMock.Verify(x => x.CheckCardActivity(card), Times.Exactly(2));
 
             Assert.Single(result);
             Assert.Equal("from", result.First().FieldName);
@@ -144,8 +142,10 @@ namespace Server.Test.Services
             // Arrange
             var cards = _testDataGenerator.GenerateFakeCards();
             var card = cards.First();
+
             // Act
             var result = _businessLogicValidationService.ValidateCardExist(cards, card.CardName, card.CardNumber);
+
             // Assert
             Assert.True(result);
         }
@@ -156,8 +156,10 @@ namespace Server.Test.Services
             // Arrange
             var cards = _testDataGenerator.GenerateFakeCards();
             var card = _testDataGenerator.GenerateFakeCard();
+
             // Act
             var result = _businessLogicValidationService.ValidateCardExist(cards, card.CardName, card.CardNumber);
+
             // Assert
             Assert.False(result);
         }

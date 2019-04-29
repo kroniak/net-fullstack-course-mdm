@@ -1,7 +1,7 @@
+﻿using AlfaBank.Core.Infrastructure;
+using AlfaBank.Services.Converters;
 using System;
 using System.Globalization;
-using AlfaBank.Core.Infrastructure;
-using AlfaBank.Services.Converters;
 using Xunit;
 
 namespace Server.Test.Services.Converters
@@ -18,8 +18,10 @@ namespace Server.Test.Services.Converters
         {
             // Arrange
             var validConvertedSum = Convert.ToDecimal(valueOut, CultureInfo.GetCultureInfo("en-us"));
+
             // Act
             var convertedSum = _currencyConverter.GetConvertedSum(valueIn, from, to);
+
             // Assert
             Assert.Equal(validConvertedSum, convertedSum);
         }

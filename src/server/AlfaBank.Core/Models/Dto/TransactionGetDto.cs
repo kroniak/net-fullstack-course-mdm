@@ -31,7 +31,6 @@ namespace AlfaBank.Core.Models.Dto
         /// <summary>
         /// To card number
         /// </summary>
-        [Required]
         public new string To { get; set; }
     }
 }

@@ -1,5 +1,4 @@
-using System;
-using AlfaBank.Core.Infrastructure;
+﻿using AlfaBank.Core.Infrastructure;
 using AlfaBank.Core.Models;
 using AlfaBank.Services;
 using AlfaBank.Services.Converters;
@@ -7,6 +6,7 @@ using AlfaBank.Services.Interfaces;
 using Moq;
 using Server.Test.Mocks;
 using Server.Test.Utils;
+using System;
 using Xunit;
 
 namespace Server.Test.Services
@@ -26,10 +26,11 @@ namespace Server.Test.Services
             var cardCheckerMock = new CardCheckerMockFactory().Mock();
             _currencyConverterMock = new Mock<ICurrencyConverter>();
 
-            _currencyConverterMock.Setup(c => c.GetConvertedSum(
-                    It.IsAny<decimal>(),
-                    It.IsAny<Currency>(),
-                    It.IsAny<Currency>()))
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        It.IsAny<decimal>(),
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
                 .Returns(10M);
 
             _cardService = new CardService(cardCheckerMock.Object, _currencyConverterMock.Object);
@@ -48,6 +49,7 @@ namespace Server.Test.Services
         {
             // Act
             var cardType = _cardService.GetCardType(cardNumber);
+
             // Assert
             Assert.Equal(validCardType, cardType);
         }
@@ -61,8 +63,10 @@ namespace Server.Test.Services
             {
                 CardNumber = "4790878827491205"
             };
+
             // Act
             var addBonusOnOpenResult = _cardService.TryAddBonusOnOpen(card);
+
             // Assert
             var cardBalanceAfterAddingOfBonus = card.Balance;
             Assert.Equal(validCardBalanceAfterAddingOfBonus, cardBalanceAfterAddingOfBonus);
@@ -107,9 +111,11 @@ namespace Server.Test.Services
             var card = _testDataGenerator.GenerateFakeCard();
             card.Transactions.Clear();
 
-            _currencyConverterMock.Setup(c => c.GetConvertedSum(It.IsAny<decimal>(),
-                It.IsAny<Currency>(),
-                It.IsAny<Currency>())).Throws<Exception>();
+            _currencyConverterMock.Setup(
+                c => c.GetConvertedSum(
+                    It.IsAny<decimal>(),
+                    It.IsAny<Currency>(),
+                    It.IsAny<Currency>())).Throws<Exception>();
 
             // Act
             var result = _cardService.TryAddBonusOnOpen(card);
@@ -124,10 +130,238 @@ namespace Server.Test.Services
         {
             // Arrange
             var card = _testDataGenerator.GenerateFakeCard();
+
             // Act
             var balanceOfCard = card.RoundBalance;
+
             // Assert
             Assert.Equal(10M, balanceOfCard);
+        }
+
+        [Fact]
+        public void TryTariffCharge_ValidCard_ValidTariff_BalanceChanged_True()
+        {
+            // Arrange
+            const decimal tariff = 0.1M;
+            var card = _testDataGenerator.GenerateFakeCard();
+            var balance = card.Balance;
+
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        tariff,
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
+                .Returns(tariff);
+
+            // Act
+            var result = _cardService.TryTariffCharge(card, tariff);
+
+            // Assert
+            _currencyConverterMock.Verify(
+                c => c.GetConvertedSum(
+                    tariff,
+                    It.IsAny<Currency>(),
+                    It.IsAny<Currency>()), Times.Once);
+
+            Assert.Equal(balance - tariff, card.Balance);
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void TryTariffCharge_ValidCard_ValidTariff_TransactionCountIncrease()
+        {
+            // Arrange
+            const decimal tariff = 0.1M;
+            var card = _testDataGenerator.GenerateFakeCard();
+            var count = card.Transactions.Count;
+
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        tariff,
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
+                .Returns(tariff);
+
+            // Act
+            _cardService.TryTariffCharge(card, tariff);
+
+            // Assert
+            Assert.Equal(count + 1, card.Transactions.Count);
+        }
+
+        [Theory]
+        [InlineData(-0.1)]
+        [InlineData(0)]
+        public void TryTariffCharge_ValidCard_InvalidTariff_BalanceNotChanged_ReturnFalse(decimal tariff)
+        {
+            // Arrange
+            var card = _testDataGenerator.GenerateFakeCard();
+            var balance = card.Balance;
+
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        tariff,
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
+                .Returns(tariff);
+
+            // Act
+            var result = _cardService.TryTariffCharge(card, tariff);
+
+            // Assert
+            _currencyConverterMock.Verify(
+                c => c.GetConvertedSum(
+                    tariff,
+                    It.IsAny<Currency>(),
+                    It.IsAny<Currency>()), Times.Never);
+
+            Assert.Equal(balance, card.Balance);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void TryTariffCharge_ValidCard_HighTariff_BalanceNotChanged_ReturnFalse()
+        {
+            // Arrange
+            const decimal tariff = 100M;
+            var card = _testDataGenerator.GenerateFakeCard();
+            var balance = card.Balance;
+
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        tariff,
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
+                .Returns(tariff);
+
+            // Act
+            var result = _cardService.TryTariffCharge(card, tariff);
+
+            // Assert
+            _currencyConverterMock.Verify(
+                c => c.GetConvertedSum(
+                    tariff,
+                    It.IsAny<Currency>(),
+                    It.IsAny<Currency>()), Times.Once);
+
+            Assert.Equal(balance, card.Balance);
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void TryTariffCharge_ValidCard_HighTariff_TransactionCountNotIncrease()
+        {
+            // Arrange
+            const decimal tariff = 100M;
+            var card = _testDataGenerator.GenerateFakeCard();
+            var count = card.Transactions.Count;
+
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        tariff,
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
+                .Returns(tariff);
+
+            // Act
+            _cardService.TryTariffCharge(card, tariff);
+
+            // Assert
+            Assert.Equal(count, card.Transactions.Count);
+        }
+
+        [Fact]
+        public void TryTariffCharge_ValidCard_HighTariff_ThrowException_ReturnFalse()
+        {
+            // Arrange
+            const decimal tariff = 0.1M;
+            var card = _testDataGenerator.GenerateFakeCard();
+
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        tariff,
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
+                .Throws<Exception>();
+
+            // Act
+            var result = _cardService.TryTariffCharge(card, tariff);
+
+            // Assert
+            _currencyConverterMock.Verify(
+                c => c.GetConvertedSum(
+                    tariff,
+                    It.IsAny<Currency>(),
+                    It.IsAny<Currency>()), Times.Once);
+
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void TryTariffCharge_ValidCard_HighTariff_ThrowException_BalanceNotChanged()
+        {
+            // Arrange
+            const decimal tariff = 0.1M;
+            var card = _testDataGenerator.GenerateFakeCard();
+            var balance = card.Balance;
+
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        tariff,
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
+                .Throws<Exception>();
+
+            // Act
+            _cardService.TryTariffCharge(card, tariff);
+
+            // Assert
+            Assert.Equal(balance, card.Balance);
+        }
+        
+        [Fact]
+        public void TryTariffCharge_ValidCard_HighTariff_ThrowException_TransactionCountNotIncrease()
+        {
+            // Arrange
+            const decimal tariff = 0.1M;
+            var card = _testDataGenerator.GenerateFakeCard();
+            var count = card.Transactions.Count;
+
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        tariff,
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
+                .Throws<Exception>();
+
+            // Act
+            _cardService.TryTariffCharge(card, tariff);
+
+            // Assert
+            Assert.Equal(count, card.Transactions.Count);
+        }
+
+        [Theory]
+        [InlineData(-0.1)]
+        [InlineData(0)]
+        public void TryTariffCharge_ValidCard_InvalidTariff_TransactionCountNotIncrease(decimal tariff)
+        {
+            // Arrange
+            var card = _testDataGenerator.GenerateFakeCard();
+            var count = card.Transactions.Count;
+
+            _currencyConverterMock.Setup(
+                    c => c.GetConvertedSum(
+                        tariff,
+                        It.IsAny<Currency>(),
+                        It.IsAny<Currency>()))
+                .Returns(tariff);
+
+            // Act
+            _cardService.TryTariffCharge(card, tariff);
+
+            // Assert
+            Assert.Equal(count, card.Transactions.Count);
         }
     }
 }

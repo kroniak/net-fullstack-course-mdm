@@ -29,10 +29,14 @@ namespace AlfaBank.Core.Data
         {
             if (card == null) return;
 
-            if (All(user).All(c => c.CardNumber != card.CardNumber)) return;
+            var deleteCard = Get(user, card.CardNumber);
+            if (deleteCard == null) return;
 
-            user.Cards.Remove(card);
+            user.Cards.Remove(deleteCard);
         }
+
+        /// <inheritdoc />
+        public int Count(User user) => user.Cards.Count;
 
         /// <inheritdoc />
         public IEnumerable<Card> All(User user) => user.Cards;

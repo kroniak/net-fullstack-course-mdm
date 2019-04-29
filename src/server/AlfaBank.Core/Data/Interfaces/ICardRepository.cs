@@ -34,5 +34,12 @@ namespace AlfaBank.Core.Data.Interfaces
         /// <param name="user"> current user</param>
         /// <param name="card"> card to remove</param>
         void Remove(User user, Card card);
+
+        /// <summary>
+        /// Get cards count for the current user
+        /// </summary>
+        /// <param name="user"> current user</param>
+        /// <returns>Count of the cards</returns>
+        int Count(User user);
     }
 }

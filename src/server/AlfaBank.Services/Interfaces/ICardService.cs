@@ -21,5 +21,13 @@ namespace AlfaBank.Services.Interfaces
         /// <param name="card">Card to</param>
         /// <returns>Return <see langword="bool"/> if operation is successfully</returns>
         bool TryAddBonusOnOpen(Card card);
+
+        /// <summary>
+        /// Try to charge tariff from card
+        /// </summary>
+        /// <param name="card">Card from</param>
+        /// <param name="tariff">Tariff in RUB</param>
+        /// <returns>Return <see langword="bool"/> if operation is successfully</returns>
+        bool TryTariffCharge(Card card, decimal tariff);
     }
 }

@@ -1,4 +1,4 @@
-using AlfaBank.Services.Checkers;
+﻿using AlfaBank.Services.Checkers;
 using Server.Test.Mocks;
 using Server.Test.Mocks.Services;
 using Server.Test.Utils;
@@ -29,25 +29,21 @@ namespace Server.Test.Services.Checkers
         [InlineData("4083967629457310")]
         [InlineData("5395 0290 0902 1990")]
         [InlineData("   4978 588211036789    ")]
-        public void CheckCardNumber_CorrectNumber_ReturnTrue(string value) =>
-            Assert.True(_cardChecker.CheckCardNumber(value));
-
-        [Theory]
-        [InlineData("4083967629457310")]
-        [InlineData("5395 0290 0902 1990")]
-        [InlineData("   4978 588211036789    ")]
         [InlineData("2203572242903770")]
-        public void CheckCardNumber_CardNumberIsInvalid_ReturnTrue(string cardNumber)
+        public void CheckCardNumber_CorrectNumber_ReturnTrue(string cardNumber)
         {
             // Act
             var cardIsValid = _cardChecker.CheckCardNumber(cardNumber);
+
             // Assert
             Assert.True(cardIsValid);
         }
 
         [Theory]
         [InlineData("1234 1234 1233 1234")]
-        [InlineData("1234 1234 1233 1234 1234 1234 1234")]
+        [InlineData("1234 1234 1233 1234 123")]
+        [InlineData("1234 1234 1233 1234 1233")]
+        [InlineData("123412331232")]
         [InlineData("12341233123")]
         [InlineData("")]
         [InlineData(null)]
@@ -55,6 +51,7 @@ namespace Server.Test.Services.Checkers
         {
             // Act
             var cardIsValid = _cardChecker.CheckCardNumber(cardNumber);
+
             // Assert
             Assert.False(cardIsValid);
         }
@@ -68,6 +65,7 @@ namespace Server.Test.Services.Checkers
         {
             // Act
             var cardWasEmittedByAlfabank = _cardChecker.CheckCardEmitter(value);
+
             // Assert
             Assert.False(cardWasEmittedByAlfabank);
         }
@@ -79,6 +77,7 @@ namespace Server.Test.Services.Checkers
         {
             // Act
             var cardWasEmittedByAlfabank = _cardChecker.CheckCardEmitter(value);
+
             // Assert
             Assert.True(cardWasEmittedByAlfabank);
         }
@@ -88,8 +87,10 @@ namespace Server.Test.Services.Checkers
         {
             // Arrange
             var card = _testDataGenerator.GenerateFakeCard();
+
             // Act
             var cardIsActivity = _cardChecker.CheckCardActivity(card);
+
             // Assert
             Assert.True(cardIsActivity);
         }
@@ -99,8 +100,10 @@ namespace Server.Test.Services.Checkers
         {
             // Arrange
             var card = _testDataGenerator.GenerateFakeValidityCard();
+
             // Act
             var cardActivity = _cardChecker.CheckCardActivity(card);
+
             // Assert
             Assert.False(cardActivity);
         }

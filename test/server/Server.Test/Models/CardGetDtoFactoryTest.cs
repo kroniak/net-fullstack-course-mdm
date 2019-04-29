@@ -1,4 +1,4 @@
-using AlfaBank.Core.Infrastructure;
+﻿using AlfaBank.Core.Infrastructure;
 using AlfaBank.Core.Models;
 using AlfaBank.Core.Models.Dto;
 using AlfaBank.Core.Models.Factories;
@@ -10,6 +10,7 @@ using Xunit;
 // ReSharper disable PossibleMultipleEnumeration
 namespace Server.Test.Models
 {
+    /// <inheritdoc />
     public class CardGetDtoFactoryTest : DtoFactoryAbstractTest
     {
         private readonly TestDataGenerator _testDataGenerator;
@@ -29,12 +30,13 @@ namespace Server.Test.Models
         public void Map_ReturnValidDto()
         {
             // Arrange
-            var fakeCard = _testDataGenerator.GenerateFakeCard(new CardPostDto
-            {
-                Name = "my card",
-                Currency = (int) Currency.RUR,
-                Type = (int) CardType.MAESTRO
-            });
+            var fakeCard = _testDataGenerator.GenerateFakeCard(
+                new CardPostDto
+                {
+                    Name = "my card",
+                    Currency = (int)Currency.RUR,
+                    Type = (int)CardType.MAESTRO
+                });
 
             // Act
             var dto = _dtoFactory.Map(fakeCard, _ => true);
@@ -51,12 +53,13 @@ namespace Server.Test.Models
         public void Map_ValidateFail_ReturnNull()
         {
             // Arrange
-            var fakeCard = _testDataGenerator.GenerateFakeCard(new CardPostDto
-            {
-                Name = "my card",
-                Currency = (int) Currency.RUR,
-                Type = (int) CardType.MAESTRO
-            });
+            var fakeCard = _testDataGenerator.GenerateFakeCard(
+                new CardPostDto
+                {
+                    Name = "my card",
+                    Currency = (int)Currency.RUR,
+                    Type = (int)CardType.MAESTRO
+                });
 
             // Act
             var dto = _dtoFactory.Map(fakeCard, _ => false);
@@ -76,14 +79,16 @@ namespace Server.Test.Models
 
             // Assert
             Assert.NotEmpty(dtoList);
-            Assert.All(dtoList, dto =>
-            {
-                Assert.Equal(10M, dto.Balance);
-                Assert.InRange(dto.Type, 0, 4);
-                Assert.InRange(dto.Currency, 0, 3);
-                Assert.Equal("01/22", dto.Exp);
-                Assert.Equal(16, dto.Number.Length);
-            });
+            Assert.All(
+                dtoList,
+                dto =>
+                {
+                    Assert.Equal(10M, dto.Balance);
+                    Assert.InRange(dto.Type, 0, 4);
+                    Assert.InRange(dto.Currency, 0, 3);
+                    Assert.Equal("01/22", dto.Exp);
+                    Assert.Equal(16, dto.Number.Length);
+                });
         }
 
         [Fact]

@@ -1,4 +1,4 @@
-using AlfaBank.Core.Models;
+﻿using AlfaBank.Core.Models;
 using AutoMapper;
 
 namespace Server.Test.Models

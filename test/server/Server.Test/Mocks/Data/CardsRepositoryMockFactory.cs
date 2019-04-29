@@ -1,8 +1,8 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using AlfaBank.Core.Data.Interfaces;
+﻿using AlfaBank.Core.Data.Interfaces;
 using AlfaBank.Core.Models;
 using Moq;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Server.Test.Mocks.Data
 {
@@ -16,8 +16,11 @@ namespace Server.Test.Mocks.Data
             _mock = new Mock<ICardRepository>();
 
             _mock.Setup(r => r.All(user)).Returns(user.Cards);
+
             if (user.Cards.Any())
+            {
                 _mock.Setup(r => r.Get(user, It.IsAny<string>())).Returns(user.Cards.First());
+            }
         }
 
         public Mock<ICardRepository> Mock() => _mock;

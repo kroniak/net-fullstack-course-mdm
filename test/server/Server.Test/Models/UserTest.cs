@@ -1,6 +1,6 @@
-using System;
-using AlfaBank.Core.Exceptions;
+﻿using AlfaBank.Core.Exceptions;
 using AlfaBank.Core.Models;
+using System;
 using Xunit;
 
 namespace Server.Test.Models

@@ -2,6 +2,7 @@
 .gitignore
 .idea
 src/client
+logs
 **/*.info
 **/*.log
 **/*.md

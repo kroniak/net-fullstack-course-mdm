@@ -1,7 +1,5 @@
-using AlfaBank.Core.Extensions;
+﻿using AlfaBank.Core.Extensions;
 using Xunit;
-
-// ReSharper disable StringLiteralTypo
 
 namespace Server.Test
 {

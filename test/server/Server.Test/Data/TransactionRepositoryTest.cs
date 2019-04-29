@@ -1,5 +1,4 @@
-using System.Linq;
-using AlfaBank.Core.Data;
+﻿using AlfaBank.Core.Data;
 using AlfaBank.Core.Data.Interfaces;
 using AlfaBank.Core.Models;
 using AlfaBank.Services.Interfaces;
@@ -7,12 +6,13 @@ using Moq;
 using Server.Test.Mocks;
 using Server.Test.Mocks.Services;
 using Server.Test.Utils;
+using System.Linq;
 using Xunit;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace Server.Test.Data
 {
-    public class TransactionBankRepositoryTest
+    public class TransactionRepositoryTest
     {
         private readonly Mock<ICardService> _cardServiceMock;
         private readonly Mock<ICardRepository> _cardRepositoryMock;
@@ -23,7 +23,7 @@ namespace Server.Test.Data
         private readonly Card _card;
         private readonly User _user;
 
-        public TransactionBankRepositoryTest()
+        public TransactionRepositoryTest()
         {
             _cardServiceMock = new CardServiceMockFactory().Mock();
             _cardRepositoryMock = new Mock<ICardRepository>();
@@ -49,7 +49,7 @@ namespace Server.Test.Data
             var transactions = _transactionsRepository.Get(_user, _card.CardNumber, 0, 10);
 
             // Assert
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.AtMost(3));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(3));
 
             Assert.Single(transactions);
             Assert.Null(transactions.First().CardFromNumber);
@@ -62,13 +62,13 @@ namespace Server.Test.Data
         {
             // Arrange
             var card = _testDataGenerator.GenerateFakeCard("4790878827491205");
-            _cardRepositoryMock.Setup(c => c.Get(_user, _card.CardNumber)).Returns((Card) null);
+            _cardRepositoryMock.Setup(c => c.Get(_user, _card.CardNumber)).Returns((Card)null);
 
             // Act
             var transactions = _transactionsRepository.Get(_user, card.CardNumber, 0, 10);
 
             // Assert
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.AtMost(4));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(4));
 
             Assert.Empty(transactions);
         }

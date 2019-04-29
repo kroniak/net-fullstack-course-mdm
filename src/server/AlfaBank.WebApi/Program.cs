@@ -1,12 +1,15 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using Microsoft.AspNetCore;
+﻿using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Serilog;
+using System.Diagnostics.CodeAnalysis;
+using Serilog.Events;
+
+#pragma warning disable 1591
 
 namespace AlfaBank.WebApi
 {
     // ReSharper disable once ClassNeverInstantiated.Global
-    [SuppressMessage("ReSharper", "MemberCanBePrivate.Global")]
     [ExcludeFromCodeCoverage]
     public class Program
     {
@@ -15,15 +18,25 @@ namespace AlfaBank.WebApi
             CreateWebHostBuilder(args).Build().Run();
         }
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args)
+        private static IWebHostBuilder CreateWebHostBuilder(string[] args)
         {
-            var configuration = new ConfigurationBuilder()
-                .Build();
-
             return WebHost
                 .CreateDefaultBuilder(args)
-                .UseConfiguration(configuration)
-                .UseStartup<Startup>();
+                .ConfigureAppConfiguration((hostingContext, config) => { config.AddEnvironmentVariables("ALFABANK_"); })
+                .ConfigureLogging((hostingContext, logging) =>
+                {
+                    Log.Logger = new LoggerConfiguration()
+                        .ReadFrom.Configuration(hostingContext.Configuration)
+                        .WriteTo.Console(
+                            LogEventLevel.Warning,
+                            "===> {Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] [{TraceIdentifier}] {Message}{NewLine}{Exception}")
+                        .WriteTo.RollingFile("./logs/alfabank-service-api-{Hour}.log",
+                            LogEventLevel.Debug,
+                            "===> {Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level}] [{TraceIdentifier}] {Message}{NewLine}{Exception}")
+                        .CreateLogger();
+                })
+                .UseStartup<Startup>()
+                .UseSerilog();
         }
     }
 }

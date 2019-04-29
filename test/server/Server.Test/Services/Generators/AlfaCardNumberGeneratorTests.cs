@@ -1,4 +1,4 @@
-using AlfaBank.Core.Exceptions;
+﻿using AlfaBank.Core.Exceptions;
 using AlfaBank.Core.Infrastructure;
 using AlfaBank.Services;
 using AlfaBank.Services.Checkers;
@@ -42,7 +42,7 @@ namespace Server.Test.Services.Generators
         {
             // Arrange
             var temp = Constants.AlfaBins[0];
-            Constants.AlfaBins[0] = "";
+            Constants.AlfaBins[0] = string.Empty;
 
             // Assert
             Assert.Throws<CriticalException>(() => _cardNumberGenerator.GenerateNewCardNumber(CardType.MIR));

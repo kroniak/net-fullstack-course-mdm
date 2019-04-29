@@ -1,9 +1,10 @@
-using AlfaBank.Core.Infrastructure;
+﻿using AlfaBank.Core.Infrastructure;
 using AlfaBank.Services.Interfaces;
 using Moq;
 
 namespace Server.Test.Mocks
 {
+    /// <inheritdoc />
     public class CardNumberGeneratorMockFactory : IMockFactory<ICardNumberGenerator>
     {
         private readonly Mock<ICardNumberGenerator> _mock;

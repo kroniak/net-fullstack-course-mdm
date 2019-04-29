@@ -1,19 +1,35 @@
-using System.Diagnostics.CodeAnalysis;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 
 namespace AlfaBank.WebApi.Middleware
 {
+    /// <summary>
+    /// Extension to adding custom IApplicationBuilder middlewares
+    /// </summary>
     [ExcludeFromCodeCoverage]
     public static class MiddlewareExtensions
     {
         // ReSharper disable once UnusedMethodReturnValue.Global
-        public static IApplicationBuilder UseHttpStatusCodeExceptionMiddleware(this IApplicationBuilder builder)
-            => builder.UseMiddleware<HttpStatusCodeExceptionMiddleware>();
 
-        public static async Task WriteErrorAsync(this HttpContext context, int statusCode, string message)
+        /// <summary>
+        /// Extensions for user custom `HttpStatusCodeExceptionMiddleware` middleware
+        /// </summary>
+        /// <param name="app">IApplicationBuilder</param>
+        /// <returns>IApplicationBuilder instance</returns>
+        public static IApplicationBuilder UseHttpStatusCodeExceptionMiddleware(this IApplicationBuilder app)
+            => app.UseMiddleware<HttpStatusCodeExceptionMiddleware>();
+
+        /// <summary>
+        /// Methods to writing errors to context response
+        /// </summary>
+        /// <param name="context">Current context</param>
+        /// <param name="statusCode">Current error status code</param>
+        /// <param name="message">Current error message</param>
+        /// <returns>Task type for WriteAsync</returns>
+        public static Task WriteErrorAsync(this HttpContext context, int statusCode, string message)
         {
             var error = new
             {
@@ -22,7 +38,7 @@ namespace AlfaBank.WebApi.Middleware
             };
             var json = JsonConvert.SerializeObject(error);
 
-            await context.Response.WriteAsync(json);
+            return context.Response.WriteAsync(json);
         }
     }
 }

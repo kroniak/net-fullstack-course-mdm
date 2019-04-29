@@ -1,12 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using AlfaBank.Core.Extensions;
+﻿using AlfaBank.Core.Extensions;
 using AlfaBank.Core.Infrastructure;
 using AlfaBank.Core.Models;
 using AlfaBank.Core.Models.Dto;
 using AlfaBank.Services.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Server.Test.Utils
 {
@@ -24,8 +24,6 @@ namespace Server.Test.Utils
             _cardNumberGenerator = cardNumberGenerator ?? throw new ArgumentNullException(nameof(cardNumberGenerator));
         }
 
-        public User GenerateFakeUser() => new User("admin@admin.net");
-
         public static User GenerateFakeUser(IEnumerable<Card> cards)
         {
             var user = new User("admin@admin.net");
@@ -34,71 +32,27 @@ namespace Server.Test.Utils
             return user;
         }
 
-        public Card GenerateFakeCard(CardPostDto cardDto)
-        {
-            var card = new Card
+        public static IEnumerable<CardGetDto> GenerateFakeCardGetDtoList(IEnumerable<Card> cards) =>
+            cards.Select(card => new CardGetDto
             {
-                CardNumber = _cardNumberGenerator.GenerateNewCardNumber(CardType.MAESTRO),
-                CardName = cardDto.Name,
-                Currency = (Currency) cardDto.Currency,
-                CardType = (CardType) cardDto.Type,
-                DtOpenCard = DateTime.Parse("01-01-2019")
-            };
-            _cardService.TryAddBonusOnOpen(card);
-
-            return card;
-        }
-
-        private string GenerateFakeCardNumber() => _cardNumberGenerator.GenerateNewCardNumber(CardType.MASTERCARD);
-
-        public Card GenerateFakeCard() => GenerateFakeCard(GenerateFakeCardNumber());
+                Number = card.CardNumber,
+                Type = (int)card.CardType,
+                Name = card.CardName,
+                Currency = (int)card.Currency,
+                Exp = card.DtOpenCard.ToShortStringFormat(card.ValidityYear),
+                Balance = card.RoundBalance
+            });
 
         public static CardGetDto GenerateFakeCardGetDto(Card card) =>
             new CardGetDto
             {
                 Number = card.CardNumber,
-                Type = (int) card.CardType,
+                Type = (int)card.CardType,
                 Name = card.CardName,
-                Currency = (int) card.Currency,
+                Currency = (int)card.Currency,
                 Exp = card.DtOpenCard.ToShortStringFormat(card.ValidityYear),
                 Balance = card.RoundBalance
             };
-
-        public static IEnumerable<CardGetDto> GenerateFakeCardGetDtoList(IEnumerable<Card> cards) =>
-            cards.Select(card => new CardGetDto
-            {
-                Number = card.CardNumber,
-                Type = (int) card.CardType,
-                Name = card.CardName,
-                Currency = (int) card.Currency,
-                Exp = card.DtOpenCard.ToShortStringFormat(card.ValidityYear),
-                Balance = card.RoundBalance
-            });
-
-        public Card GenerateFakeCard(string number)
-        {
-            var card = new Card
-            {
-                CardNumber = number,
-                CardName = "my cardDto",
-                Currency = Currency.RUR,
-                CardType = CardType.MAESTRO,
-                DtOpenCard = DateTime.Today.AddYears(-1)
-            };
-
-            _cardService.TryAddBonusOnOpen(card);
-            return card;
-        }
-
-        public Card GenerateFakeValidityCard() =>
-            GenerateFakeValidityCard(GenerateFakeCardNumber());
-
-        private Card GenerateFakeValidityCard(string number)
-        {
-            var card = GenerateFakeCard(number);
-            card.DtOpenCard = DateTime.Today.AddYears(-6);
-            return card;
-        }
 
         public static CardPostDto GenerateFakeValidityCardDto() =>
             new CardPostDto
@@ -124,9 +78,6 @@ namespace Server.Test.Utils
                 CardToNumber = "4083969259636239",
                 Sum = sum
             };
-
-//        public Transaction GenerateFakeTransaction() =>
-//            GenerateFakeTransaction(GenerateFakeCard());
 
         public static Transaction GenerateFakeTransaction(Card card, TransactionPostDto transaction) =>
             new Transaction
@@ -169,10 +120,50 @@ namespace Server.Test.Utils
                 DateTime = transaction.DateTime
             });
 
+        public User GenerateFakeUser() => new User("admin@admin.net");
+
+        public Card GenerateFakeCard(CardPostDto cardDto)
+        {
+            var card = new Card
+            {
+                CardNumber = _cardNumberGenerator.GenerateNewCardNumber(CardType.MAESTRO),
+                CardName = cardDto.Name,
+                Currency = (Currency)cardDto.Currency,
+                CardType = (CardType)cardDto.Type,
+                DtOpenCard = DateTime.Parse("01-01-2019")
+            };
+            _cardService.TryAddBonusOnOpen(card);
+
+            return card;
+        }
+
+        public Card GenerateFakeCard() => GenerateFakeCard(GenerateFakeCardNumber());
+
+        public Card GenerateFakeCard(string number)
+        {
+            var card = new Card
+            {
+                CardNumber = number,
+                CardName = "my cardDto",
+                Currency = Currency.RUR,
+                CardType = CardType.MAESTRO,
+                DtOpenCard = DateTime.Today.AddYears(-1)
+            };
+
+            _cardService.TryAddBonusOnOpen(card);
+            return card;
+        }
+
+        public Card GenerateFakeValidityCard() =>
+            GenerateFakeValidityCard(GenerateFakeCardNumber());
+
         public IEnumerable<Card> GenerateFakeCards()
         {
             var date = DateTime.Parse("01-01-2019");
-            if (_cards != null) return _cards;
+            if (_cards != null)
+            {
+                return _cards;
+            }
 
             _cards = new List<Card>
             {
@@ -209,5 +200,14 @@ namespace Server.Test.Utils
 
             return _cards;
         }
+
+        private Card GenerateFakeValidityCard(string number)
+        {
+            var card = GenerateFakeCard(number);
+            card.DtOpenCard = DateTime.Today.AddYears(-6);
+            return card;
+        }
+
+        private string GenerateFakeCardNumber() => _cardNumberGenerator.GenerateNewCardNumber(CardType.MASTERCARD);
     }
 }
