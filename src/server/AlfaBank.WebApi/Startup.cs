@@ -14,8 +14,10 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Reflection;
+using AlfaBank.Core.Data;
 using AlfaBank.WebApi.HostedServices;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -46,6 +48,11 @@ namespace AlfaBank.WebApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAutoMapper(options => options.AddProfile<DomainToDtoProfile>());
+
+            // Add db
+            services.AddDbContext<SqlContext>(
+                options =>
+                    options.UseSqlite(_configuration.GetConnectionString("sqlite")));
 
             // Add owns services
             services

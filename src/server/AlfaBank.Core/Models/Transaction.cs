@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace AlfaBank.Core.Models
 {
@@ -7,6 +8,12 @@ namespace AlfaBank.Core.Models
     /// </summary>
     public class Transaction
     {
+        /// <summary>
+        /// Identification
+        /// </summary>
+        [Key]
+        public int Id { get; set; }
+        
         /// <summary>
         /// Parent Card for transaction
         /// </summary>

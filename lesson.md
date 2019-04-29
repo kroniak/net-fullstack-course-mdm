@@ -1,24 +1,18 @@
 # Курс Fullstack разработки на ASP.NET Core + React\Redux
 
-## Блок 5. Инфраструктура
+## Блок 6. Базы данных
 
 ### Домашнее задание
 
-1. Добавить Alfabank.StyleCop и отрефакторить приложение
-2. Добавить Swagger OpenApi и провести необходимые изменения в проекте
-3. Добавить конфигурацию из файлов и из переменных окружения
-4. Добавить сквозное логирование в файлы во внешний volume контейнера через Serilog
-5. Добавить HealthCheck endpoint, подумать над метриками, предоставленными приложением
-6. \*\* Логирование осуществлять в ELK стек, поднятом в контейнере, рядом с контейнером приложения. Запускать весь стек через docker-compose
-7. \*\* Добавить задание сервис через IHostedService
+1. Добавить DBContext c базой в MySQL или в SQLite и добавить туда необходимые классы
+2. Добавить инициализацию данных при старте приложения в базе данных
+3. Добавить миграцию с инициализацией данных
+4. В модель базы данных добавить создание необходимых индексов
+5. Отрефакторить приложение для использования баз данных вместо InMemory хранилища
+6. Исправить тесты для использования баз данных
+7. \*\* База данных должна подниматься в связанном контейнере в продакшене
 
 ### Материалы для изучения дома
 
 - <https://docs.docker.com/engine/examples/dotnetcore/> - Docker and ASP.NET Core
-- <https://docs.microsoft.com/en-us/aspnet/core/tutorials/web-api-help-pages-using-swagger?view=aspnetcore-2.2> - Swagger and ASP.NET Core
-- <https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-2.2> - Configuration and ASP.NET Core
-- <https://docs.microsoft.com/en-us/aspnet/core/web-api/advanced/analyzers?view=aspnetcore-2.2&tabs=visual-studio> - Analyzers and ASP.NET Core
-- <https://docs.microsoft.com/en-us/aspnet/core/fundamentals/logging/?view=aspnetcore-2.2> - Logging and ASP.NET Core
-- <https://docs.microsoft.com/en-us/dotnet/standard/microservices-architecture/implement-resilient-applications/monitor-app-health> - HealthCheck and ASP.NET Core
-- <https://github.com/serilog/serilog-aspnetcore> - Serilog and ASP.NET Core
-- <https://www.elastic.co/elk-stack> - ELK Stack
+- <https://docs.microsoft.com/en-us/ef/core/> - EF Core

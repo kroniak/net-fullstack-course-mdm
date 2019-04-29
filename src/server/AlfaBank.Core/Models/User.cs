@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Mail;
 using AlfaBank.Core.Exceptions;
@@ -25,6 +26,12 @@ namespace AlfaBank.Core.Models
 
             UserName = userName;
         }
+        
+        /// <summary>
+        /// Identification
+        /// </summary>
+        [Key]
+        public int Id { get; set; }
 
         /// <summary>
         /// Getter and setter username of the user for login
