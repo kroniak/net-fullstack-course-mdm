@@ -1,4 +1,5 @@
 ﻿using Moq;
+
 // ReSharper disable UnusedMemberInSuper.Global
 
 namespace Server.Test.Mocks

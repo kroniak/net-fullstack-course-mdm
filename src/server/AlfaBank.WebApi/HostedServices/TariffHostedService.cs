@@ -11,32 +11,31 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
+// ReSharper disable UnusedMember.Global
+
 // ReSharper disable ClassNeverInstantiated.Global
 
 namespace AlfaBank.WebApi.HostedServices
 {
+    /// <inheritdoc cref="IHostedService" />
     /// <summary>
     /// Background task service for tariff charging
     /// </summary>
     [ExcludeFromCodeCoverage]
-    // ReSharper disable once InheritDocConsiderUsage
     public class TariffHostedService : IHostedService, IDisposable
     {
         private readonly IServiceProvider _services;
         private readonly ILogger<TariffHostedService> _logger;
-        private readonly IUserRepository _userRepository;
         private Timer _timer;
 
         /// <inheritdoc />
         public TariffHostedService(
             IServiceProvider services,
-            ILogger<TariffHostedService> logger,
-            IUserRepository userRepository
+            ILogger<TariffHostedService> logger
         )
         {
             _services = services ?? throw new ArgumentNullException(nameof(services));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
         /// <inheritdoc />
@@ -67,7 +66,7 @@ namespace AlfaBank.WebApi.HostedServices
                         scope.ServiceProvider
                             .GetRequiredService<ICardRepository>();
 
-                    var service = new CardService(checker, converter);
+                    var service = new CardService(checker, converter, repository);
 
                     TariffCharge(repository, service);
                 }
@@ -78,9 +77,8 @@ namespace AlfaBank.WebApi.HostedServices
         {
             _logger.LogInformation("Tariff Background Service is started process.");
 
-            var user = _userRepository.GetCurrentUser();
-
-            var cards = repository.All(user);
+            var cards = repository.GetWithInclude(
+                _ => true, false, c => c.Transactions);
 
             foreach (var card in cards)
             {

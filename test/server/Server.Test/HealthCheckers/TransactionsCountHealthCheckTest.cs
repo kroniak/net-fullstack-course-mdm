@@ -11,6 +11,8 @@ using Microsoft.Extensions.Options;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using AlfaBank.Core.Data;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
 
 namespace Server.Test.HealthCheckers
@@ -23,13 +25,14 @@ namespace Server.Test.HealthCheckers
             // Arrange
             var services = new ServiceCollection();
             services
-                .AddInMemoryUserStorage()
+                .AddDbContext<SqlContext>(
+                    o => { o.UseInMemoryDatabase("Test_database"); })
                 .AddAlfaBankServices()
                 .AddHealthChecks()
                 .AddCheck<TransactionsCountHealthCheck>(
                     "transactions-count-by-hour",
                     HealthStatus.Degraded,
-                    new[] { "transactions" });
+                    new[] {"transactions"});
 
             // Act
             var serviceProvider = services.BuildServiceProvider();
@@ -50,17 +53,29 @@ namespace Server.Test.HealthCheckers
                     services =>
                     {
                         services
-                            .AddInMemoryUserStorage()
+                            .AddDbContext<SqlContext>(
+                                o =>
+                                {
+                                    o.UseInMemoryDatabase("Test_database");
+                                    o.EnableSensitiveDataLogging();
+                                })
                             .AddAlfaBankServices()
                             .AddHealthChecks()
                             .AddCheck<TransactionsCountHealthCheck>(
                                 "transactions-count-by-hour",
                                 HealthStatus.Degraded,
-                                new[] { "transactions" });
+                                new[] {"transactions"});
                     })
                 .Configure(
                     app =>
                     {
+                        using (var serviceScope = app.ApplicationServices.GetRequiredService<IServiceScopeFactory>()
+                            .CreateScope())
+                        {
+                            serviceScope.ServiceProvider.GetService<SqlContext>()
+                                .Database.EnsureCreated();
+                        }
+
                         app.UseHealthChecks(
                             "/health",
                             new HealthCheckOptions

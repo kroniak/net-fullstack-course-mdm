@@ -23,6 +23,7 @@ namespace AlfaBank.WebApi.Controllers
     [Produces("application/json")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [BindProperties]
     public class TransactionsController : Controller
     {
@@ -78,7 +79,6 @@ namespace AlfaBank.WebApi.Controllers
         [HttpGet("{number}")]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(IEnumerable<TransactionGetDto>), StatusCodes.Status200OK)]
-        [ProducesDefaultResponseType]
         public ActionResult<IEnumerable<TransactionGetDto>> Get(
             [Required] [CreditCard] string number,
             [FromQuery] [Range(1, 1000)] int skip = 0)
@@ -96,8 +96,15 @@ namespace AlfaBank.WebApi.Controllers
             }
 
             // Select
+            var user = _userRepository.GetCurrentUser("admin@admin.ru");
+
+            if (user == null)
+            {
+                return Forbid();
+            }
+
             var transactions = _transactionRepository.Get(
-                _userRepository.GetCurrentUser(),
+                user,
                 number,
                 skip,
                 10);
@@ -127,7 +134,6 @@ namespace AlfaBank.WebApi.Controllers
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(TransactionGetDto), StatusCodes.Status201Created)]
-        [ProducesDefaultResponseType]
         public ActionResult<TransactionGetDto> Post([FromBody] [Required] TransactionPostDto value)
         {
             // Validate
@@ -144,8 +150,15 @@ namespace AlfaBank.WebApi.Controllers
             }
 
             // Work
+            var user = _userRepository.GetCurrentUser("admin@admin.ru");
+
+            if (user == null)
+            {
+                return Forbid();
+            }
+
             var (transaction, transferResult) = _bankService.TryTransferMoney(
-                _userRepository.GetCurrentUser(),
+                user,
                 value.Sum,
                 value.From,
                 value.To);
@@ -162,11 +175,15 @@ namespace AlfaBank.WebApi.Controllers
 
             var dto = _dtoFactory.Map(transaction, TryValidateModel);
 
-            // Validate
-            if (dto != null) return Created($"/transactions/{cardFromNumber}", dto);
-            
-            _logger.LogError("Transferring was unsuccessfully.");
-            return BadRequest("Transferring error");
+            switch (dto)
+            {
+                // Validate
+                case null:
+                    _logger.LogError("Transferring was unsuccessfully.");
+                    return BadRequest("Transferring error");
+                default:
+                    return Created($"/transactions/{cardFromNumber}", dto);
+            }
         }
 
         // DELETE api/transactions

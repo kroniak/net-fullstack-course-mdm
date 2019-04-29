@@ -22,7 +22,7 @@ using Xunit;
 // ReSharper disable ImplicitlyCapturedClosure
 namespace Server.Test.Controllers
 {
-    public class TransactionsControllerTest : ControllerTestBase
+    public class TransactionsControllerTest : ControllerTestBase, IDisposable
     {
         private readonly TestDataGenerator _testDataGenerator;
 
@@ -37,6 +37,8 @@ namespace Server.Test.Controllers
         private readonly Mock<IDtoFactory<Transaction, TransactionGetDto>> _dtoFactoryMock;
 
         private readonly TransactionsController _controller;
+        private readonly Mock<IUserRepository> _userRepositoryMock;
+        private bool _isUserCall = true;
 
         public TransactionsControllerTest()
         {
@@ -54,13 +56,13 @@ namespace Server.Test.Controllers
             // testData
             _fakeCards = _testDataGenerator.GenerateFakeCards();
             _user = TestDataGenerator.GenerateFakeUser(_fakeCards);
-            var userRepositoryMock = new UserRepositoryMockFactory(_user).Mock();
+            _userRepositoryMock = new UserRepositoryMockFactory(_user).Mock();
 
             var objectValidatorMock = GetMockObjectValidator();
 
             _controller = new TransactionsController(
                 _dtoValidationServiceMock.Object,
-                userRepositoryMock.Object,
+                _userRepositoryMock.Object,
                 _transactionRepositoryMock.Object,
                 _cardCheckerMock.Object,
                 _bankServiceMock.Object,
@@ -80,9 +82,12 @@ namespace Server.Test.Controllers
         [InlineData("4978588211036789", 0)]
         public void GetTransactions_InvalidCardNumber_ReturnBadRequest(string value, int skip)
         {
+            // Arrange
+            _isUserCall = false;
+
             // Act
             var getResult = _controller.Get(value, skip);
-            var result = (BadRequestObjectResult)getResult.Result;
+            var result = (BadRequestObjectResult) getResult.Result;
 
             // Assert
             _transactionRepositoryMock.Verify(r => r.Get(_user, value, skip, 10), Times.Never);
@@ -98,11 +103,12 @@ namespace Server.Test.Controllers
         public void GetTransactions_InvalidSkip_ReturnBadRequest(string value, int skip)
         {
             // Arrange
+            _isUserCall = false;
             _controller.ModelState.AddModelError("skip", "Skip must be greater than -1");
 
             // Act
             var getResult = _controller.Get(value, skip);
-            var result = (BadRequestObjectResult)getResult.Result;
+            var result = (BadRequestObjectResult) getResult.Result;
 
             // Assert
             _transactionRepositoryMock.Verify(r => r.Get(_user, value, skip, 10), Times.Never);
@@ -153,6 +159,24 @@ namespace Server.Test.Controllers
         }
 
         [Theory]
+        [InlineData("5101265622568232")]
+        public void GetTransactions_UserNotFound_ReturnForbidResult(string value)
+        {
+            //Assert 
+            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), true)).Returns((User) null);
+
+            var result = (ForbidResult) _controller.Get(value).Result;
+
+            // Assert
+            _cardCheckerMock.Verify(r => r.CheckCardEmitter(value), Times.Once);
+            _transactionRepositoryMock.Verify(r => r.Get(_user, value, 0, 10), Times.Never);
+            _dtoFactoryMock.Verify(
+                d => d.Map(It.IsAny<Transaction>(), It.IsAny<Func<TransactionGetDto, bool>>()),
+                Times.Never);
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Theory]
         [InlineData("4083969259636239")]
         [InlineData("5101265622568232")]
         public void GetTransactions_ValidData_ReturnOKResult(string value)
@@ -161,6 +185,36 @@ namespace Server.Test.Controllers
 
             Assert.IsType<OkObjectResult>(result);
             Assert.Equal(200, result.StatusCode);
+        }
+
+        [Fact]
+        public void PostTransactions_UserNotFound_ReturnForbidResult()
+        {
+            //Assert 
+            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), true)).Returns((User) null);
+            var fakeCardFrom = _fakeCards.First();
+            var fakeCardTo = _fakeCards.ElementAt(1);
+
+            var fakePostTransactionDto = TestDataGenerator.GenerateFakePostTransactionDto(fakeCardFrom, fakeCardTo);
+
+            _dtoValidationServiceMock.Setup(d => d.ValidateTransferDto(fakePostTransactionDto))
+                .Returns(Enumerable.Empty<CustomModelError>());
+
+            var result = (ForbidResult) _controller.Post(fakePostTransactionDto).Result;
+
+            // Assert
+            _dtoValidationServiceMock.Verify(d => d.ValidateTransferDto(fakePostTransactionDto), Times.Once);
+            _bankServiceMock.Verify(
+                r => r.TryTransferMoney(
+                    _user,
+                    fakePostTransactionDto.Sum,
+                    fakePostTransactionDto.From,
+                    fakePostTransactionDto.To),
+                Times.Never);
+            _dtoFactoryMock.Verify(d => d.Map(It.IsAny<Transaction>(), It.IsAny<Func<TransactionGetDto, bool>>()),
+                Times.Never);
+
+            Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
@@ -187,8 +241,8 @@ namespace Server.Test.Controllers
                 .Returns(fakeGetTransactionDto);
 
             // Act
-            var result = (CreatedResult)_controller.Post(fakePostTransactionDto).Result;
-            var transaction = (TransactionGetDto)result.Value;
+            var result = (CreatedResult) _controller.Post(fakePostTransactionDto).Result;
+            var transaction = (TransactionGetDto) result.Value;
 
             // Assert
             _dtoValidationServiceMock.Verify(d => d.ValidateTransferDto(fakePostTransactionDto), Times.Once);
@@ -242,7 +296,7 @@ namespace Server.Test.Controllers
 
             // Act
             var postResult = _controller.Post(fakeTransactionDto);
-            var result = (BadRequestObjectResult)postResult.Result;
+            var result = (BadRequestObjectResult) postResult.Result;
 
             // Assert
             _dtoValidationServiceMock.Verify(d => d.ValidateTransferDto(fakeTransactionDto), Times.Once);
@@ -278,11 +332,11 @@ namespace Server.Test.Controllers
                         fakePostTransactionDto.To))
                 .Returns((fakeTransaction, Enumerable.Empty<CustomModelError>()));
             _dtoFactoryMock.Setup(d => d.Map(fakeTransaction, It.IsAny<Func<TransactionGetDto, bool>>()))
-                .Returns((TransactionGetDto)null);
+                .Returns((TransactionGetDto) null);
 
             // Act
             var postResult = _controller.Post(fakePostTransactionDto);
-            var result = (BadRequestObjectResult)postResult.Result;
+            var result = (BadRequestObjectResult) postResult.Result;
 
             // Assert
             _dtoValidationServiceMock.Verify(d => d.ValidateTransferDto(fakePostTransactionDto), Times.Once);
@@ -303,6 +357,8 @@ namespace Server.Test.Controllers
         public void PostTransactions_InvalidDTO_ReturnBadRequest()
         {
             // Arrange
+            _isUserCall = false;
+
             var cardFrom = _fakeCards.First();
             var cardTo = _fakeCards.First();
 
@@ -322,7 +378,7 @@ namespace Server.Test.Controllers
 
             // Act
             var postResult = _controller.Post(fakeTransactionDto);
-            var result = (BadRequestObjectResult)postResult.Result;
+            var result = (BadRequestObjectResult) postResult.Result;
 
             // Assert
             _dtoValidationServiceMock.Verify(d => d.ValidateTransferDto(fakeTransactionDto), Times.Once);
@@ -341,7 +397,9 @@ namespace Server.Test.Controllers
         [Fact]
         public void PutTransaction_ReturnMethodNotAllowed()
         {
-            var result = (StatusCodeResult)_controller.Put();
+            _isUserCall = false;
+
+            var result = (StatusCodeResult) _controller.Put();
 
             Assert.Equal(405, result.StatusCode);
         }
@@ -349,7 +407,8 @@ namespace Server.Test.Controllers
         [Fact]
         public void DeleteTransaction_ReturnMethodNotAllowed()
         {
-            var result = (StatusCodeResult)_controller.Delete();
+            var result = (StatusCodeResult) _controller.Delete();
+            _isUserCall = false;
 
             Assert.Equal(405, result.StatusCode);
         }
@@ -358,7 +417,7 @@ namespace Server.Test.Controllers
             string value)
         {
             // Arrange
-            var fakeCard = _testDataGenerator.GenerateFakeCard(value);
+            var fakeCard = _testDataGenerator.GenerateFakeCard(_user, value);
             var fakeTransactions = TestDataGenerator.GenerateFakeTransactions(fakeCard);
             var fakeGetTransactionDtoList = TestDataGenerator.GenerateFakeGetTransactionDtoList(fakeTransactions);
 
@@ -368,15 +427,15 @@ namespace Server.Test.Controllers
                 .Returns(fakeGetTransactionDtoList);
 
             // Act
-            var result = (OkObjectResult)_controller.Get(value).Result;
-            var transactions = (IEnumerable<TransactionGetDto>)result.Value;
+            var result = (OkObjectResult) _controller.Get(value).Result;
+            var transactions = (IEnumerable<TransactionGetDto>) result.Value;
 
             // Assert
             _cardCheckerMock.Verify(r => r.CheckCardEmitter(value), Times.Once);
             _transactionRepositoryMock.Verify(r => r.Get(_user, value, 0, 10), Times.Once);
             _dtoFactoryMock.Verify(
                 d => d.Map(fakeTransactions, It.IsAny<Func<TransactionGetDto, bool>>()),
-                Times.Once());
+                Times.Once);
             return (result, transactions);
         }
 
@@ -385,7 +444,7 @@ namespace Server.Test.Controllers
                 string value)
         {
             // Arrange
-            var fakeCard = _testDataGenerator.GenerateFakeCard(value);
+            var fakeCard = _testDataGenerator.GenerateFakeCard(_user, value);
             var fakeTransactions = TestDataGenerator.GenerateFakeTransactions(fakeCard);
 
             _transactionRepositoryMock.Setup(r => r.Get(_user, value, 0, 10))
@@ -394,16 +453,22 @@ namespace Server.Test.Controllers
                 .Returns(Enumerable.Empty<TransactionGetDto>());
 
             // Act
-            var result = (OkObjectResult)_controller.Get(value).Result;
-            var transactions = (IEnumerable<TransactionGetDto>)result.Value;
+            var result = (OkObjectResult) _controller.Get(value).Result;
+            var transactions = (IEnumerable<TransactionGetDto>) result.Value;
 
             // Assert
             _cardCheckerMock.Verify(r => r.CheckCardEmitter(value), Times.Once);
             _transactionRepositoryMock.Verify(r => r.Get(_user, value, 0, 10), Times.Once);
             _dtoFactoryMock.Verify(
                 d => d.Map(fakeTransactions, It.IsAny<Func<TransactionGetDto, bool>>()),
-                Times.Once());
+                Times.Once);
             return (result, transactions);
+        }
+
+        public void Dispose()
+        {
+            if (_isUserCall)
+                _userRepositoryMock.Verify(u => u.GetCurrentUser("admin@admin.ru", It.IsAny<bool>()), Times.Once);
         }
     }
 }

@@ -54,4 +54,8 @@
   <ItemGroup>
     <ProjectReference Include="..\AlfaBank.Services\AlfaBank.Services.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations" />
+  </ItemGroup>
 </Project>

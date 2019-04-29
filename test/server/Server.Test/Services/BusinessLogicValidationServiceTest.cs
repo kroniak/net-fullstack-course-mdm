@@ -6,6 +6,7 @@ using Server.Test.Mocks;
 using Server.Test.Mocks.Services;
 using Server.Test.Utils;
 using System.Linq;
+using AlfaBank.Core.Exceptions;
 using Xunit;
 
 namespace Server.Test.Services
@@ -32,7 +33,7 @@ namespace Server.Test.Services
         public void ValidateTransfer_ReturnEmptyErrorsList()
         {
             // Arrange
-            var cards = _testDataGenerator.GenerateFakeCards();
+            var cards = _testDataGenerator.GenerateFakeCards().ToArray();
             var card = cards.First();
 
             _cardCheckerMock.Setup(x => x.CheckCardActivity(card)).Returns(true);
@@ -57,7 +58,8 @@ namespace Server.Test.Services
             _cardCheckerMock.Setup(x => x.CheckCardActivity(card)).Returns(true);
 
             // Act
-            var result = _businessLogicValidationService.ValidateTransfer(card, card, 1);
+            var result = _businessLogicValidationService.ValidateTransfer(card, card, 1)
+                .ToArray();
 
             // Assert
             _cardCheckerMock.Verify(x => x.CheckCardActivity(card), Times.Exactly(2));
@@ -85,10 +87,12 @@ namespace Server.Test.Services
             _cardCheckerMock.Verify(x => x.CheckCardActivity(card1), Times.Once);
             _cardCheckerMock.Verify(x => x.CheckCardActivity(card2), Times.Once);
 
-            Assert.Single(result);
-            Assert.Equal("from", result.First().FieldName);
-            Assert.Equal("Card is expired", result.First().Message);
-            Assert.Equal("Карта просрочена", result.First().LocalizedMessage);
+            var customModelErrors = result as CustomModelError[] ?? result.ToArray();
+
+            Assert.Single(customModelErrors);
+            Assert.Equal("from", customModelErrors.First().FieldName);
+            Assert.Equal("Card is expired", customModelErrors.First().Message);
+            Assert.Equal("Карта просрочена", customModelErrors.First().LocalizedMessage);
         }
 
         [Fact]
@@ -102,7 +106,7 @@ namespace Server.Test.Services
             _cardCheckerMock.Setup(x => x.CheckCardActivity(card2)).Returns(false);
 
             // Act
-            var result = _businessLogicValidationService.ValidateTransfer(card1, card2, 1);
+            var result = _businessLogicValidationService.ValidateTransfer(card1, card2, 1).ToArray();
 
             // Assert
             _cardCheckerMock.Verify(x => x.CheckCardActivity(card1), Times.Once);
@@ -125,7 +129,7 @@ namespace Server.Test.Services
             _cardCheckerMock.Setup(x => x.CheckCardActivity(card2)).Returns(true);
 
             // Act
-            var result = _businessLogicValidationService.ValidateTransfer(card1, card2, 10000);
+            var result = _businessLogicValidationService.ValidateTransfer(card1, card2, 10000).ToArray();
 
             // Assert
             _cardCheckerMock.Verify(x => x.CheckCardActivity(card1), Times.Once);
@@ -134,34 +138,6 @@ namespace Server.Test.Services
             Assert.Equal("from", result.First().FieldName);
             Assert.Equal("Balance of the card is low", result.First().Message);
             Assert.Equal("Нет денег на карте", result.First().LocalizedMessage);
-        }
-
-        [Fact]
-        public void ValidateCardExist_ReturnTrue()
-        {
-            // Arrange
-            var cards = _testDataGenerator.GenerateFakeCards();
-            var card = cards.First();
-
-            // Act
-            var result = _businessLogicValidationService.ValidateCardExist(cards, card.CardName, card.CardNumber);
-
-            // Assert
-            Assert.True(result);
-        }
-
-        [Fact]
-        public void ValidateCardExist_ReturnFalse()
-        {
-            // Arrange
-            var cards = _testDataGenerator.GenerateFakeCards();
-            var card = _testDataGenerator.GenerateFakeCard();
-
-            // Act
-            var result = _businessLogicValidationService.ValidateCardExist(cards, card.CardName, card.CardNumber);
-
-            // Assert
-            Assert.False(result);
         }
     }
 }

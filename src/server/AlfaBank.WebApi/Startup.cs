@@ -18,6 +18,7 @@ using AlfaBank.Core.Data;
 using AlfaBank.WebApi.HostedServices;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -31,14 +32,17 @@ namespace AlfaBank.WebApi
     public class Startup
     {
         private readonly IConfiguration _configuration;
+        private readonly ILoggerFactory _loggerFactory;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Startup"/> class.
         /// </summary>
         /// <param name="configuration">The current configuration.</param>
-        public Startup(IConfiguration configuration)
+        /// <param name="loggerFactory">Current logger factory</param>
+        public Startup(IConfiguration configuration, ILoggerFactory loggerFactory)
         {
-            _configuration = configuration;
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
         }
 
         /// <summary>
@@ -52,11 +56,15 @@ namespace AlfaBank.WebApi
             // Add db
             services.AddDbContext<SqlContext>(
                 options =>
-                    options.UseSqlite(_configuration.GetConnectionString("sqlite")));
+                {
+                    options.UseLoggerFactory(_loggerFactory);
+                    options.UseSqlite(
+                        _configuration.GetConnectionString("sqlite"),
+                        b => b.MigrationsAssembly("AlfaBank.WebApi"));
+                });
 
             // Add owns services
             services
-                .AddInMemoryUserStorage()
                 .AddAlfaBankServices();
 
             // Add Background service
@@ -128,7 +136,7 @@ namespace AlfaBank.WebApi
             {
                 app.UseDeveloperExceptionPage();
             }
-            
+
             app.UseHttpStatusCodeExceptionMiddleware();
 
             app.UseSwagger();

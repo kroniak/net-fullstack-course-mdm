@@ -64,25 +64,18 @@ namespace Server.Test.Services
         public void TryOpenNewCard_CorrectTypeData_ReturnEmptyErrorsList(CardType type)
         {
             // Arrange
-            _validationBlServiceMock.Setup(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>())).Returns(false);
+            _cardRepositoryMock.Setup(c => c.Add(It.IsAny<Card>()));
+            _cardRepositoryMock.Setup(c => c.Get(_user, It.IsAny<string>())).Returns((Card) null);
 
             // Act
             var (_, errors) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, type);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.All(_user), Times.Once);
-            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(type), Times.Between(1,2, Range.Inclusive));
-            _validationBlServiceMock.Verify(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>()),
-                Times.Once);
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(4));
+            _cardRepositoryMock.Verify(c => c.Get(_user, It.IsAny<string>()), Times.Once);
+            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(type), Times.Between(1, 2, Range.Inclusive));
+            _cardRepositoryMock.Verify(c => c.Add(It.IsAny<Card>()), Times.Once);
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Once);
 
             Assert.Empty(errors);
         }
@@ -95,25 +88,18 @@ namespace Server.Test.Services
         public void TryOpenNewCard_CorrectData_ReturnCorrectCard(CardType type)
         {
             // Arrange
-            _validationBlServiceMock.Setup(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>())).Returns(false);
+            _cardRepositoryMock.Setup(c => c.Add(It.IsAny<Card>()));
+            _cardRepositoryMock.Setup(c => c.Get(_user, It.IsAny<string>())).Returns((Card) null);
 
             // Act
             var (card, _) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, type);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.All(_user), Times.Once);
-            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(type), Times.Between(1,2, Range.Inclusive));
-            _validationBlServiceMock.Verify(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>()),
-                Times.Once);
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(4));
+            _cardRepositoryMock.Verify(c => c.Get(_user, It.IsAny<string>()), Times.Once);
+            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(type), Times.Between(1, 2, Range.Inclusive));
+            _cardRepositoryMock.Verify(c => c.Add(It.IsAny<Card>()), Times.Once);
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Once);
 
             Assert.Equal(Currency.RUR, card.Currency);
             Assert.Single(card.Transactions);
@@ -128,15 +114,10 @@ namespace Server.Test.Services
             var (card, _) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, CardType.OTHER);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.All(_user), Times.Never);
+            _cardRepositoryMock.Verify(c => c.GetAllWithTransactions(_user), Times.Never);
             _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.OTHER), Times.Never);
-            _validationBlServiceMock.Verify(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>()),
-                Times.Never);
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(3));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Never);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.Null(card);
         }
@@ -148,15 +129,10 @@ namespace Server.Test.Services
             var (_, errors) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, CardType.OTHER);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.All(_user), Times.Never);
+            _cardRepositoryMock.Verify(c => c.GetAllWithTransactions(_user), Times.Never);
             _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.OTHER), Times.Never);
-            _validationBlServiceMock.Verify(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>()),
-                Times.Never);
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(3));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Never);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.Equal("type", errors.First().FieldName);
             Assert.Equal("Wrong type card", errors.First().Message);
@@ -167,25 +143,18 @@ namespace Server.Test.Services
         public void TryOpenNewCard_ExistingCard_ReturnError()
         {
             // Assert
-            _validationBlServiceMock.Setup(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>())).Returns(true);
+            var card = _cards.First();
+            _cardRepositoryMock.Setup(c => c.Get(_user, It.IsAny<string>())).Returns(card);
 
             // Act
             var (_, errors) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, CardType.MASTERCARD);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.All(_user), Times.Once);
-            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Between(1,2, Range.Inclusive));
-            _validationBlServiceMock.Verify(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>()),
-                Times.Once);
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(3));
+            _cardRepositoryMock.Verify(c => c.Get(_user, It.IsAny<string>()), Times.Once);
+            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Exactly(2));
+            _cardRepositoryMock.Verify(c => c.Add(It.IsAny<Card>()), Times.Never);
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Never);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.NotEmpty(errors);
             Assert.Equal("internal", errors.First().FieldName);
@@ -197,25 +166,18 @@ namespace Server.Test.Services
         public void TryOpenNewCard_ExistingCard_ReturnNullCard()
         {
             // Assert
-            _validationBlServiceMock.Setup(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>())).Returns(true);
+            var cardEx = _cards.First();
+            _cardRepositoryMock.Setup(c => c.Get(_user, It.IsAny<string>())).Returns(cardEx);
 
             // Act
             var (card, _) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, CardType.MASTERCARD);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.All(_user), Times.Once);
-            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Between(1,2, Range.Inclusive));
-            _validationBlServiceMock.Verify(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>()),
-                Times.Once);
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(3));
+            _cardRepositoryMock.Verify(c => c.Get(_user, It.IsAny<string>()), Times.Once);
+            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Exactly(2));
+            _cardRepositoryMock.Verify(c => c.Add(It.IsAny<Card>()), Times.Never);
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Never);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.Null(card);
         }
@@ -224,27 +186,19 @@ namespace Server.Test.Services
         public void TryOpenNewCard_TryAddBonusInternalError_ReturnError()
         {
             // Assert
-            _validationBlServiceMock.Setup(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>())).Returns(false);
-
+            _cardRepositoryMock.Setup(c => c.Add(It.IsAny<Card>()));
+            _cardRepositoryMock.Setup(c => c.Get(_user, It.IsAny<string>())).Returns((Card) null);
             _cardServiceMock.Setup(b => b.TryAddBonusOnOpen(It.IsAny<Card>())).Returns(false);
 
             // Act
             var (_, errors) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, CardType.MASTERCARD);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.All(_user), Times.Once);
-            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Between(1,2, Range.Inclusive));
-            _validationBlServiceMock.Verify(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>()),
-                Times.Once);
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(4));
+            _cardRepositoryMock.Verify(c => c.Get(_user, It.IsAny<string>()), Times.Once);
+            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Exactly(2));
+            _cardRepositoryMock.Verify(c => c.Add(It.IsAny<Card>()), Times.Once);
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.NotEmpty(errors);
             Assert.Equal("internal", errors.First().FieldName);
@@ -256,27 +210,19 @@ namespace Server.Test.Services
         public void TryOpenNewCard_TryAddBonusException_ReturnError()
         {
             // Assert
-            _validationBlServiceMock.Setup(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>())).Returns(false);
-
+            _cardRepositoryMock.Setup(c => c.Add(It.IsAny<Card>()));
+            _cardRepositoryMock.Setup(c => c.Get(_user, It.IsAny<string>())).Returns((Card) null);
             _cardServiceMock.Setup(b => b.TryAddBonusOnOpen(It.IsAny<Card>())).Throws<IOException>();
 
             // Act
             var (_, errors) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, CardType.MASTERCARD);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.All(_user), Times.Once);
-            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Between(1,2, Range.Inclusive));
-            _validationBlServiceMock.Verify(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>()),
-                Times.Once);
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(4));
+            _cardRepositoryMock.Verify(c => c.Get(_user, It.IsAny<string>()), Times.Once);
+            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Exactly(2));
+            _cardRepositoryMock.Verify(c => c.Add(It.IsAny<Card>()), Times.Once);
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.NotEmpty(errors);
             Assert.Equal("internal", errors.First().FieldName);
@@ -288,30 +234,65 @@ namespace Server.Test.Services
         public void TryOpenNewCard_TryAddBonusException_ReturnNullCard()
         {
             // Assert
-            _validationBlServiceMock.Setup(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>())).Returns(false);
-
+            _cardRepositoryMock.Setup(c => c.Add(It.IsAny<Card>()));
+            _cardRepositoryMock.Setup(c => c.Get(_user, It.IsAny<string>())).Returns((Card) null);
             _cardServiceMock.Setup(b => b.TryAddBonusOnOpen(It.IsAny<Card>())).Throws<IOException>();
 
             // Act
             var (card, _) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, CardType.MASTERCARD);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.All(_user), Times.Once);
-
-            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Between(1,2, Range.Inclusive));
-            _validationBlServiceMock.Verify(
-                b => b.ValidateCardExist(
-                    It.IsAny<IEnumerable<Card>>(),
-                    "name",
-                    It.IsAny<string>()),
-                Times.Once);
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(4));
+            _cardRepositoryMock.Verify(c => c.Get(_user, It.IsAny<string>()), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Add(It.IsAny<Card>()), Times.Once);
+            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Exactly(2));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.Null(card);
+        }
+
+        [Fact]
+        public void TryOpenNewCard_DbSaveException_ReturnNullCard()
+        {
+            // Assert
+            _cardRepositoryMock.Setup(c => c.Get(_user, It.IsAny<string>())).Returns((Card) null);
+            _cardRepositoryMock.Setup(c => c.Add(It.IsAny<Card>()));
+            _cardServiceMock.Setup(b => b.TryAddBonusOnOpen(It.IsAny<Card>())).Returns(true);
+            _cardRepositoryMock.Setup(c => c.Save()).Throws<Exception>();
+
+            // Act
+            var (card, _) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, CardType.MASTERCARD);
+
+            // Assert
+            _cardRepositoryMock.Verify(c => c.Get(_user, It.IsAny<string>()), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Add(It.IsAny<Card>()), Times.Once);
+            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Exactly(2));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Once);
+
+            Assert.Null(card);
+        }
+
+        [Fact]
+        public void TryOpenNewCard_DbSaveException_ReturnErrorList()
+        {
+            // Assert
+            _cardRepositoryMock.Setup(c => c.Get(_user, It.IsAny<string>())).Returns((Card) null);
+            _cardRepositoryMock.Setup(c => c.Add(It.IsAny<Card>()));
+            _cardServiceMock.Setup(b => b.TryAddBonusOnOpen(It.IsAny<Card>())).Returns(true);
+            _cardRepositoryMock.Setup(c => c.Save()).Throws<Exception>();
+
+            // Act
+            var (_, errors) = _bankService.TryOpenNewCard(_user, "name", Currency.RUR, CardType.MASTERCARD);
+
+            // Assert
+            _cardRepositoryMock.Verify(c => c.Get(_user, It.IsAny<string>()), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Add(It.IsAny<Card>()), Times.Once);
+            _cardNumberGeneratorMock.Verify(c => c.GenerateNewCardNumber(CardType.MASTERCARD), Times.Exactly(2));
+            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsNotIn(_cards)), Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Once);
+
+            Assert.NotEmpty(errors);
         }
 
         [Fact]
@@ -321,8 +302,8 @@ namespace Server.Test.Services
             var from = _cards.First();
             var to = _cards.ElementAt(1);
 
-            _cardRepositoryMock.Setup(c => c.Get(_user, from.CardNumber)).Returns(from);
-            _cardRepositoryMock.Setup(c => c.Get(_user, to.CardNumber)).Returns(to);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, from.CardNumber, false)).Returns(from);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, to.CardNumber, false)).Returns(to);
 
             const decimal sum = 10M;
 
@@ -336,12 +317,13 @@ namespace Server.Test.Services
             var (_, errors) = _bankService.TryTransferMoney(_user, sum, from.CardNumber, to.CardNumber);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.Get(_user, from.CardNumber), Times.Once);
-            _cardRepositoryMock.Verify(c => c.Get(_user, to.CardNumber), Times.Once);
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, from.CardNumber, false), Times.Once);
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, to.CardNumber, false), Times.Once);
             _validationBlServiceMock.Verify(b => b.ValidateTransfer(from, to, sum), Times.Once);
             _currencyConverterMock.Verify(
                 b => b.GetConvertedSum(sum, from.Currency, to.Currency),
-                Times.Once);
+                Times.Once);            
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Once);
 
             Assert.Empty(errors);
         }
@@ -356,8 +338,8 @@ namespace Server.Test.Services
             var fromBalance = from.Balance;
             var toBalance = to.Balance;
 
-            _cardRepositoryMock.Setup(c => c.Get(_user, from.CardNumber)).Returns(from);
-            _cardRepositoryMock.Setup(c => c.Get(_user, to.CardNumber)).Returns(to);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, from.CardNumber, false)).Returns(from);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, to.CardNumber, false)).Returns(to);
 
             const decimal sum = 10M;
 
@@ -371,12 +353,13 @@ namespace Server.Test.Services
             var (transaction, _) = _bankService.TryTransferMoney(_user, sum, from.CardNumber, to.CardNumber);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.Get(_user, from.CardNumber), Times.Once);
-            _cardRepositoryMock.Verify(c => c.Get(_user, to.CardNumber), Times.Once);
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, from.CardNumber, false), Times.Once);
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, to.CardNumber, false), Times.Once);
             _validationBlServiceMock.Verify(b => b.ValidateTransfer(from, to, sum), Times.Once);
             _currencyConverterMock.Verify(
                 b => b.GetConvertedSum(sum, from.Currency, to.Currency),
                 Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Once);
 
             Assert.NotNull(transaction);
             Assert.Equal(sum, transaction.Sum);
@@ -395,8 +378,8 @@ namespace Server.Test.Services
             var fromBalance = from.Balance;
             var toBalance = to.Balance;
 
-            _cardRepositoryMock.Setup(c => c.Get(_user, from.CardNumber)).Returns(from);
-            _cardRepositoryMock.Setup(c => c.Get(_user, to.CardNumber)).Returns(to);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, from.CardNumber, false)).Returns(from);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, to.CardNumber, false)).Returns(to);
 
             const decimal sum = 10M;
 
@@ -412,12 +395,13 @@ namespace Server.Test.Services
                 _bankService.TryTransferMoney(_user, sum, from.CardNumber, to.CardNumber);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.Get(_user, from.CardNumber), Times.Once);
-            _cardRepositoryMock.Verify(c => c.Get(_user, to.CardNumber), Times.Once);
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, from.CardNumber, false), Times.Once);
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, to.CardNumber, false), Times.Once);
             _validationBlServiceMock.Verify(b => b.ValidateTransfer(from, to, sum), Times.Once);
             _currencyConverterMock.Verify(
                 b => b.GetConvertedSum(sum, from.Currency, to.Currency),
                 Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.Single(errors);
             Assert.Equal(TypeCriticalException.TRANSACTION, errors.First().Type);
@@ -434,8 +418,8 @@ namespace Server.Test.Services
             var from = _cards.First();
             var to = _cards.ElementAt(1);
 
-            _cardRepositoryMock.Setup(c => c.Get(_user, from.CardNumber)).Returns(from);
-            _cardRepositoryMock.Setup(c => c.Get(_user, to.CardNumber)).Returns(to);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, from.CardNumber, false)).Returns(from);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, to.CardNumber, false)).Returns(to);
 
             const decimal sum = 10M;
 
@@ -451,16 +435,17 @@ namespace Server.Test.Services
                 _bankService.TryTransferMoney(_user, sum, from.CardNumber, to.CardNumber);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.Get(_user, from.CardNumber), Times.Once);
-            _cardRepositoryMock.Verify(c => c.Get(_user, to.CardNumber), Times.Once);
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, from.CardNumber, false), Times.Once);
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, to.CardNumber, false), Times.Once);
             _validationBlServiceMock.Verify(b => b.ValidateTransfer(from, to, sum), Times.Once);
             _currencyConverterMock.Verify(
                 b => b.GetConvertedSum(sum, from.Currency, to.Currency),
                 Times.Once);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.Null(result);
         }
-
+        
         [Fact]
         public void TryTransferMoney_EqualsCards_ReturnError()
         {
@@ -470,6 +455,9 @@ namespace Server.Test.Services
             var fromBalance = from.Balance;
             var toBalance = to.Balance;
             const decimal sum = 10M;
+
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, from.CardNumber, false)).Returns(from);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, to.CardNumber, false)).Returns(to);
 
             _validationBlServiceMock.Setup(b => b.ValidateTransfer(from, to, sum))
                 .Returns(
@@ -488,11 +476,12 @@ namespace Server.Test.Services
             var (_, errors) = _bankService.TryTransferMoney(_user, sum, from.CardNumber, to.CardNumber);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.Get(_user, from.CardNumber), Times.Exactly(2));
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, from.CardNumber, false), Times.Exactly(2));
             _validationBlServiceMock.Verify(b => b.ValidateTransfer(from, to, sum), Times.Once);
             _currencyConverterMock.Verify(
                 b => b.GetConvertedSum(sum, from.Currency, to.Currency),
                 Times.Never);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.Single(errors);
             Assert.Equal(TypeCriticalException.CARD, errors.First().Type);
@@ -511,6 +500,9 @@ namespace Server.Test.Services
             var to = _cards.First();
             const decimal sum = 10M;
 
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, from.CardNumber, false)).Returns(from);
+            _cardRepositoryMock.Setup(c => c.GetWithTransactions(_user, to.CardNumber, false)).Returns(to);
+
             _validationBlServiceMock.Setup(b => b.ValidateTransfer(from, to, sum))
                 .Returns(
                     new List<CustomModelError>
@@ -528,11 +520,12 @@ namespace Server.Test.Services
             var (transaction, _) = _bankService.TryTransferMoney(_user, sum, from.CardNumber, to.CardNumber);
 
             // Assert
-            _cardRepositoryMock.Verify(c => c.Get(_user, from.CardNumber), Times.Exactly(2));
+            _cardRepositoryMock.Verify(c => c.GetWithTransactions(_user, from.CardNumber, false), Times.Exactly(2));
             _validationBlServiceMock.Verify(b => b.ValidateTransfer(from, to, sum), Times.Once);
             _currencyConverterMock.Verify(
                 b => b.GetConvertedSum(sum, from.Currency, to.Currency),
                 Times.Never);
+            _cardRepositoryMock.Verify(c => c.Save(), Times.Never);
 
             Assert.Null(transaction);
         }

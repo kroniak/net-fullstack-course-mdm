@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq.Expressions;
 using AlfaBank.Core.Models;
 
 namespace AlfaBank.Core.Data.Interfaces
 {
+    /// <inheritdoc />
     /// <summary>
     /// Repository for getting and setting transactions from storage
     /// </summary>
-    public interface ITransactionRepository
+    public interface ITransactionRepository : IRepository<Transaction>
     {
         /// <summary>
         /// Get range of transactions
@@ -21,16 +23,14 @@ namespace AlfaBank.Core.Data.Interfaces
         /// <summary>
         /// Get count transaction at last hour by user
         /// </summary>
-        /// <param name="user">Current logged user</param>
         /// <returns>Transaction count</returns>
-        int CountLastHour(User user);
+        int CountLastHour();
 
         /// <summary>
         /// Get count transaction by user by filter
         /// </summary>
-        /// <param name="user">Current logged user</param>
         /// <param name="filter">filter for transaction</param>
         /// <returns>Transaction count</returns>
-        int Count(User user, Func<Transaction, bool> filter);
+        int Count(Expression<Func<Transaction, bool>> filter);
     }
 }

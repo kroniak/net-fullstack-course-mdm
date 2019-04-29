@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using AlfaBank.Core.Infrastructure;
+
+// ReSharper disable UnusedAutoPropertyAccessor.Global
+
+// ReSharper disable UnusedMember.Global
 
 namespace AlfaBank.Core.Models
 {
@@ -20,13 +25,18 @@ namespace AlfaBank.Core.Models
         /// <summary>
         /// User FK object
         /// </summary>
+        [Required]
+        public int UserId { get; set; }
+
+        /// <summary>
+        /// User navigation property
+        /// </summary>
         public User User { get; set; }
 
         /// <summary>
         /// Card number
         /// </summary>
         /// <returns><see langword="string"/> card number representation</returns>
-        [MinLength(12)]
         [MaxLength(19)]
         [Required]
         public string CardNumber { get; set; }
@@ -36,16 +46,19 @@ namespace AlfaBank.Core.Models
         /// </summary>
         /// <returns><see langword="string"/> short card name representation</returns>
         [MinLength(3)]
+        [Required]
         public string CardName { get; set; }
 
         /// <summary>
         /// Card <see cref="Currency"/>
         /// </summary>
+        [Required]
         public Currency Currency { get; set; }
 
         /// <summary>
         /// Card <see cref="CardType"/>
         /// </summary>
+        [Required]
         public CardType CardType { get; set; }
 
         /// <summary>
@@ -56,16 +69,17 @@ namespace AlfaBank.Core.Models
         /// <summary>
         /// Count year's
         /// </summary>
-        public int ValidityYear { get; } = 3;
+        public int ValidityYear { get; set; } = 3;
 
         /// <summary>
         /// Return all transaction of the card
         /// </summary>
-        public List<Transaction> Transactions { get; } = new List<Transaction>();
+        public List<Transaction> Transactions { get; set; }
 
         /// <summary>
         /// Get balance of the card. Dont save it in db
         /// </summary>
+        [NotMapped]
         public decimal Balance
         {
             get
@@ -79,6 +93,7 @@ namespace AlfaBank.Core.Models
         /// <summary>
         /// Get balance of the card round to 2. Dont save it in db
         /// </summary>
+        [NotMapped]
         public decimal RoundBalance => Math.Round(Balance, 2, MidpointRounding.ToEven);
     }
 }

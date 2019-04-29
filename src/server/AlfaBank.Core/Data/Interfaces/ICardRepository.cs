@@ -3,17 +3,12 @@ using AlfaBank.Core.Models;
 
 namespace AlfaBank.Core.Data.Interfaces
 {
+    /// <inheritdoc />
     /// <summary>
     /// Repository for getting and setting card from storage
     /// </summary>
-    public interface ICardRepository
+    public interface ICardRepository : IRepository<Card>
     {
-        /// <summary>
-        /// Getter for cards
-        /// <param name="user"> current user</param>
-        /// </summary>
-        IEnumerable<Card> All(User user);
-
         /// <summary>
         /// Get one card by number
         /// </summary>
@@ -22,18 +17,19 @@ namespace AlfaBank.Core.Data.Interfaces
         Card Get(User user, string cardNumber);
 
         /// <summary>
-        /// Add card to user list of cards 
+        /// Get all cards of the user with transactions
         /// </summary>
-        /// <param name="user"> current user</param>
-        /// <param name="card"> card to add</param>
-        void Add(User user, Card card);
+        /// <param name="user"></param>
+        /// <returns>Cards Enumerable</returns>
+        IEnumerable<Card> GetAllWithTransactions(User user);
 
         /// <summary>
-        /// Remove card from list
+        /// Get one card by number with transactions
         /// </summary>
         /// <param name="user"> current user</param>
-        /// <param name="card"> card to remove</param>
-        void Remove(User user, Card card);
+        /// <param name="cardNumber">number of the cards</param>
+        /// <param name="noTracking">flag is noTracking</param>
+        Card GetWithTransactions(User user, string cardNumber, bool noTracking = false);
 
         /// <summary>
         /// Get cards count for the current user

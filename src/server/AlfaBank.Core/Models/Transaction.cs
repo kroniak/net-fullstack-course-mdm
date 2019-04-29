@@ -1,5 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace AlfaBank.Core.Models
 {
@@ -13,9 +17,15 @@ namespace AlfaBank.Core.Models
         /// </summary>
         [Key]
         public int Id { get; set; }
-        
+
         /// <summary>
-        /// Parent Card for transaction
+        /// Card FK object
+        /// </summary>
+        [Required]
+        public int CardId { get; set; }
+
+        /// <summary>
+        /// Card navigation property
         /// </summary>
         public Card Card { get; set; }
 
@@ -28,6 +38,7 @@ namespace AlfaBank.Core.Models
         /// Sum in transaction
         /// </summary>
         /// <returns><see langword="decimal"/>representation of the sum transaction</returns>
+        [Required]
         public decimal Sum { get; set; }
 
         /// <summary>
@@ -43,6 +54,7 @@ namespace AlfaBank.Core.Models
         /// <summary>
         /// Flag is transaction is credit. Dont save it in db
         /// </summary>
+        [NotMapped]
         public bool IsCredit => CardToNumber == Card.CardNumber;
     }
 }

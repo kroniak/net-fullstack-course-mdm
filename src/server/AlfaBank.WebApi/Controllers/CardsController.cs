@@ -24,6 +24,7 @@ namespace AlfaBank.WebApi.Controllers
     [Produces("application/json")]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [BindProperties]
     public class CardsController : ControllerBase
     {
@@ -74,11 +75,17 @@ namespace AlfaBank.WebApi.Controllers
         /// <response code="200">Returns all cards</response>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<CardGetDto>), StatusCodes.Status200OK)]
-        [ProducesDefaultResponseType]
         public ActionResult<IEnumerable<CardGetDto>> Get()
         {
             // Select
-            var cards = _cardRepository.All(_userRepository.GetCurrentUser());
+            var user = _userRepository.GetCurrentUser("admin@admin.ru");
+
+            if (user == null)
+            {
+                return Forbid();
+            }
+
+            var cards = _cardRepository.GetAllWithTransactions(user);
 
             // Mapping
             var cardsDto = _dtoFactory.Map(cards, TryValidateModel);
@@ -100,7 +107,6 @@ namespace AlfaBank.WebApi.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(typeof(CardGetDto), StatusCodes.Status200OK)]
-        [ProducesDefaultResponseType]
         public ActionResult<CardGetDto> Get([CreditCard] string number)
         {
             // Validate
@@ -116,7 +122,14 @@ namespace AlfaBank.WebApi.Controllers
             }
 
             // Select
-            var card = _cardRepository.Get(_userRepository.GetCurrentUser(), number);
+            var user = _userRepository.GetCurrentUser("admin@admin.ru");
+
+            if (user == null)
+            {
+                return Forbid();
+            }
+
+            var card = _cardRepository.GetWithTransactions(user, number, true);
 
             if (card == null)
             {
@@ -129,7 +142,7 @@ namespace AlfaBank.WebApi.Controllers
 
             // Validate
             if (dto != null) return Ok(dto);
-            
+
             _logger.LogWarning("This card number was not found. {number}", number);
             return NotFound();
         }
@@ -169,11 +182,18 @@ namespace AlfaBank.WebApi.Controllers
             }
 
             // Select
+            var user = _userRepository.GetCurrentUser("admin@admin.ru", false);
+
+            if (user == null)
+            {
+                return Forbid();
+            }
+
             var (card, openResult) = _bankService.TryOpenNewCard(
-                _userRepository.GetCurrentUser(),
+                user,
                 value.Name,
-                (Currency)value.Currency,
-                (CardType)value.Type);
+                (Currency) value.Currency,
+                (CardType) value.Type);
 
             if (openResult.HasErrors())
             {
@@ -185,11 +205,15 @@ namespace AlfaBank.WebApi.Controllers
             // Mapping
             var dto = _dtoFactory.Map(card, TryValidateModel);
 
-            // Validate
-            if (dto != null) return Created($"/api/cards/{dto.Number}", dto);
-            
-            _logger.LogError("Opening card was unsuccessfully.");
-            return BadRequest("Не удалось выпустить карту");
+            switch (dto)
+            {
+                // Validate
+                case null:
+                    _logger.LogError("Opening card was unsuccessfully.");
+                    return BadRequest("Не удалось выпустить карту");
+                default:
+                    return Created($"/api/cards/{dto.Number}", dto);
+            }
         }
 
         // DELETE api/cards

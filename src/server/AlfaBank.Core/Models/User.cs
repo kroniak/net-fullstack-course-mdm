@@ -1,20 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 using System.Net.Mail;
 using AlfaBank.Core.Exceptions;
+
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+// ReSharper disable MemberCanBePrivate.Global
+// ReSharper disable UnusedMember.Global
+// ReSharper disable UnusedAutoPropertyAccessor.Global
 
 namespace AlfaBank.Core.Models
 {
     /// <summary>
     /// User domain model
     /// </summary>
-    [SuppressMessage("ReSharper", "UnusedMember.Global")]
     public class User
     {
-        private MailAddress _mail;
-
         /// <summary>
         /// Create new User
         /// </summary>
@@ -24,9 +25,17 @@ namespace AlfaBank.Core.Models
             if (string.IsNullOrWhiteSpace(userName))
                 throw new CriticalException("username is null or empty");
 
-            UserName = userName;
+            try
+            {
+                var mail = new MailAddress(userName);
+                UserName = mail.ToString();
+            }
+            catch (FormatException)
+            {
+                throw new CriticalException("Email is invalid");
+            }
         }
-        
+
         /// <summary>
         /// Identification
         /// </summary>
@@ -36,22 +45,8 @@ namespace AlfaBank.Core.Models
         /// <summary>
         /// Getter and setter username of the user for login
         /// </summary>
-        public string UserName
-        {
-            get => _mail.ToString();
-
-            private set
-            {
-                try
-                {
-                    _mail = new MailAddress(value);
-                }
-                catch (FormatException)
-                {
-                    throw new CriticalException("Email is invalid");
-                }
-            }
-        }
+        [Required]
+        public string UserName { get; set; }
 
         /// <summary>
         /// Getter and setter Surname of the user
@@ -66,7 +61,7 @@ namespace AlfaBank.Core.Models
         public string Firstname { get; set; }
 
         /// <summary>
-        /// /// Getter and setter Birthday of the user
+        /// Getter and setter Birthday of the user
         /// </summary>
         /// <returns>Datetime</returns>
         public DateTime? Birthday { get; set; }
@@ -74,6 +69,6 @@ namespace AlfaBank.Core.Models
         /// <summary>
         /// Getter user card list
         /// </summary>
-        public List<Card> Cards { get; } = new List<Card>();
+        public List<Card> Cards { get; set; }
     }
 }

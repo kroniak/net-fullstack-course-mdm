@@ -1,10 +1,12 @@
-﻿using AlfaBank.Core.Exceptions;
+﻿using AlfaBank.Core.Data.Interfaces;
+using AlfaBank.Core.Exceptions;
 using AlfaBank.Core.Infrastructure;
 using AlfaBank.Services;
 using AlfaBank.Services.Checkers;
 using AlfaBank.Services.Converters;
 using AlfaBank.Services.Generators;
 using AlfaBank.Services.Interfaces;
+using Moq;
 using Xunit;
 
 namespace Server.Test.Services.Generators
@@ -18,7 +20,10 @@ namespace Server.Test.Services.Generators
         public AlfaCardNumberGeneratorTests()
         {
             _cardChecker = new CardChecker();
-            _cardService = new CardService(_cardChecker, new CurrencyConverter());
+            _cardService = new CardService(
+                _cardChecker,
+                new CurrencyConverter(),
+                new Mock<ICardRepository>().Object);
             _cardNumberGenerator = new AlfaCardNumberGenerator();
         }
 

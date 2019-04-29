@@ -36,7 +36,7 @@ namespace AlfaBank.WebApi.HealthCheckers
             HealthCheckContext context,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var count = _repository.CountLastHour(_userRepository.GetCurrentUser());
+            var count = _repository.CountLastHour();
 
             if (count > 1)
             {
@@ -45,7 +45,7 @@ namespace AlfaBank.WebApi.HealthCheckers
                         data:
                         new Dictionary<string, object>
                         {
-                            { "count", count }
+                            {"count", count}
                         }));
             }
 

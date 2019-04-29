@@ -15,12 +15,11 @@ namespace Server.Test.Mocks.Data
         {
             _mock = new Mock<ICardRepository>();
 
-            _mock.Setup(r => r.All(user)).Returns(user.Cards);
+            _mock.Setup(r => r.GetAllWithTransactions(user)).Returns(user.Cards);
 
-            if (user.Cards.Any())
-            {
-                _mock.Setup(r => r.Get(user, It.IsAny<string>())).Returns(user.Cards.First());
-            }
+            if (!user.Cards.Any()) return;
+
+            _mock.Setup(r => r.GetWithTransactions(user, It.IsAny<string>(), true)).Returns(user.Cards.First());
         }
 
         public Mock<ICardRepository> Mock() => _mock;

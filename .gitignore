@@ -427,4 +427,5 @@ healthchecksdb
 lcov.info
 coverage.json
 out
+src/server/AlfaBank.WebApi/database.db
 **/launchSettings.json

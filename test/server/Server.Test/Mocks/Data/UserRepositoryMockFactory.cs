@@ -14,7 +14,7 @@ namespace Server.Test.Mocks.Data
         {
             _mock = new Mock<IUserRepository>();
 
-            _mock.Setup(r => r.GetCurrentUser()).Returns(user);
+            _mock.Setup(r => r.GetCurrentUser("admin@admin.ru", It.IsAny<bool>())).Returns(user);
         }
 
         public Mock<IUserRepository> Mock() => _mock;

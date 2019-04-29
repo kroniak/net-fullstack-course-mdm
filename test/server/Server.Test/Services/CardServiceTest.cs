@@ -7,6 +7,8 @@ using Moq;
 using Server.Test.Mocks;
 using Server.Test.Utils;
 using System;
+using System.Collections.Generic;
+using AlfaBank.Core.Data.Interfaces;
 using Xunit;
 
 namespace Server.Test.Services
@@ -33,7 +35,10 @@ namespace Server.Test.Services
                         It.IsAny<Currency>()))
                 .Returns(10M);
 
-            _cardService = new CardService(cardCheckerMock.Object, _currencyConverterMock.Object);
+            _cardService = new CardService(
+                cardCheckerMock.Object,
+                _currencyConverterMock.Object,
+                new Mock<ICardRepository>().Object);
             _testDataGenerator = new TestDataGenerator(_cardService, cardNumberGenerator);
         }
 
@@ -61,7 +66,8 @@ namespace Server.Test.Services
             const decimal validCardBalanceAfterAddingOfBonus = 10M;
             var card = new Card
             {
-                CardNumber = "4790878827491205"
+                CardNumber = "4790878827491205",
+                Transactions = new List<Transaction>()
             };
 
             // Act
@@ -318,7 +324,7 @@ namespace Server.Test.Services
             // Assert
             Assert.Equal(balance, card.Balance);
         }
-        
+
         [Fact]
         public void TryTariffCharge_ValidCard_HighTariff_ThrowException_TransactionCountNotIncrease()
         {

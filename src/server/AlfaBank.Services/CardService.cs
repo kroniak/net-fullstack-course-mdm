@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using AlfaBank.Core.Data.Interfaces;
 using AlfaBank.Core.Infrastructure;
 using AlfaBank.Core.Models;
 using AlfaBank.Services.Checkers;
@@ -13,14 +14,20 @@ namespace AlfaBank.Services
     {
         private readonly ICardChecker _cardChecker;
         private readonly ICurrencyConverter _currencyConverter;
+        private readonly ICardRepository _cardRepository;
 
+        /// <inheritdoc />
         [ExcludeFromCodeCoverage]
-        public CardService(ICardChecker cardChecker, ICurrencyConverter currencyConverter)
+        public CardService(
+            ICardChecker cardChecker,
+            ICurrencyConverter currencyConverter,
+            ICardRepository cardRepository)
         {
             _cardChecker = cardChecker ??
                            throw new ArgumentNullException(nameof(cardChecker));
             _currencyConverter = currencyConverter ??
                                  throw new ArgumentNullException(nameof(currencyConverter));
+            _cardRepository = cardRepository ?? throw new ArgumentNullException(nameof(cardRepository));
         }
 
         /// <inheritdoc />
@@ -53,6 +60,8 @@ namespace AlfaBank.Services
         /// <inheritdoc />
         public bool TryAddBonusOnOpen(Card card)
         {
+            if (card.Transactions == null) return false;
+
             try
             {
                 card.Transactions.Add(new Transaction
@@ -88,12 +97,16 @@ namespace AlfaBank.Services
             {
                 var tariffInCurrency = _currencyConverter.GetConvertedSum(tariff, Currency.RUR, card.Currency);
                 if (card.Balance >= tariffInCurrency)
+                {
                     card.Transactions.Add(new Transaction
                     {
                         Card = card,
                         CardFromNumber = card.CardNumber,
                         Sum = tariffInCurrency
                     });
+                    _cardRepository.Update(card);
+                    _cardRepository.Save();
+                }
                 else
                 {
                     return false;

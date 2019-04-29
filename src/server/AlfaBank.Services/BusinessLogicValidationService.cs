@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using AlfaBank.Core.Exceptions;
 using AlfaBank.Core.Extensions;
 using AlfaBank.Core.Models;
 using AlfaBank.Services.Checkers;
 using AlfaBank.Services.Interfaces;
+
+// ReSharper disable ImplicitlyCapturedClosure
 
 namespace AlfaBank.Services
 {
@@ -15,6 +16,7 @@ namespace AlfaBank.Services
     {
         private readonly ICardChecker _cardChecker;
 
+        /// <inheritdoc />
         [ExcludeFromCodeCoverage]
         public BusinessLogicValidationService(ICardChecker cardChecker)
         {
@@ -22,7 +24,6 @@ namespace AlfaBank.Services
         }
 
         /// <inheritdoc />
-        [SuppressMessage("ReSharper", "ImplicitlyCapturedClosure")]
         public IEnumerable<CustomModelError> ValidateTransfer(Card from, Card to, decimal sum)
         {
             var result = new List<CustomModelError>();
@@ -58,11 +59,5 @@ namespace AlfaBank.Services
 
             return result;
         }
-
-        /// <inheritdoc />
-        public bool ValidateCardExist(IEnumerable<Card> cards,
-            string shortCardName,
-            string cardNumber) =>
-            cards.Any(c => c.CardName == shortCardName || c.CardNumber == cardNumber);
     }
 }

@@ -11,7 +11,7 @@ using System.Linq;
 namespace Server.Test.Utils
 {
     [ExcludeFromCodeCoverage]
-    public class TestDataGenerator : IFakeDataGenerator
+    public class TestDataGenerator : ITestDataGenerator
     {
         private readonly ICardService _cardService;
         private readonly ICardNumberGenerator _cardNumberGenerator;
@@ -26,7 +26,7 @@ namespace Server.Test.Utils
 
         public static User GenerateFakeUser(IEnumerable<Card> cards)
         {
-            var user = new User("admin@admin.net");
+            var user = new User("admin@admin.net") {Cards = new List<Card>()};
             user.Cards.AddRange(cards);
 
             return user;
@@ -36,9 +36,9 @@ namespace Server.Test.Utils
             cards.Select(card => new CardGetDto
             {
                 Number = card.CardNumber,
-                Type = (int)card.CardType,
+                Type = (int) card.CardType,
                 Name = card.CardName,
-                Currency = (int)card.Currency,
+                Currency = (int) card.Currency,
                 Exp = card.DtOpenCard.ToShortStringFormat(card.ValidityYear),
                 Balance = card.RoundBalance
             });
@@ -47,9 +47,9 @@ namespace Server.Test.Utils
             new CardGetDto
             {
                 Number = card.CardNumber,
-                Type = (int)card.CardType,
+                Type = (int) card.CardType,
                 Name = card.CardName,
-                Currency = (int)card.Currency,
+                Currency = (int) card.Currency,
                 Exp = card.DtOpenCard.ToShortStringFormat(card.ValidityYear),
                 Balance = card.RoundBalance
             };
@@ -126,10 +126,11 @@ namespace Server.Test.Utils
         {
             var card = new Card
             {
+                Transactions = new List<Transaction>(),
                 CardNumber = _cardNumberGenerator.GenerateNewCardNumber(CardType.MAESTRO),
                 CardName = cardDto.Name,
-                Currency = (Currency)cardDto.Currency,
-                CardType = (CardType)cardDto.Type,
+                Currency = (Currency) cardDto.Currency,
+                CardType = (CardType) cardDto.Type,
                 DtOpenCard = DateTime.Parse("01-01-2019")
             };
             _cardService.TryAddBonusOnOpen(card);
@@ -137,12 +138,27 @@ namespace Server.Test.Utils
             return card;
         }
 
-        public Card GenerateFakeCard() => GenerateFakeCard(GenerateFakeCardNumber());
+        public Card GenerateFakeCard(bool addBonus = true) =>
+            GenerateFakeCard(GenerateFakeCardNumber(), addBonus);
 
-        public Card GenerateFakeCard(string number)
+        public Card GenerateFakeCard(User user, bool addBonus = true) =>
+            GenerateFakeCard(user, GenerateFakeCardNumber(), addBonus);
+
+        public Card GenerateFakeCard(User user, string number, bool addBonus = true)
+        {
+            var card = GenerateFakeCard(number, addBonus);
+
+            card.User = user;
+
+            return card;
+        }
+
+        private Card GenerateFakeCard(string number, bool addBonus = true)
         {
             var card = new Card
             {
+                Id = -1,
+                Transactions = new List<Transaction>(),
                 CardNumber = number,
                 CardName = "my cardDto",
                 Currency = Currency.RUR,
@@ -150,7 +166,11 @@ namespace Server.Test.Utils
                 DtOpenCard = DateTime.Today.AddYears(-1)
             };
 
-            _cardService.TryAddBonusOnOpen(card);
+            if (addBonus)
+            {
+                _cardService.TryAddBonusOnOpen(card);
+            }
+
             return card;
         }
 
@@ -169,6 +189,7 @@ namespace Server.Test.Utils
             {
                 new Card
                 {
+                    Transactions = new List<Transaction>(),
                     CardNumber = _cardNumberGenerator.GenerateNewCardNumber(CardType.MAESTRO),
                     CardName = "my salary",
                     Currency = Currency.RUR,
@@ -177,6 +198,7 @@ namespace Server.Test.Utils
                 },
                 new Card
                 {
+                    Transactions = new List<Transaction>(),
                     CardNumber = _cardNumberGenerator.GenerateNewCardNumber(CardType.VISA),
                     CardName = "my debt",
                     Currency = Currency.EUR,
@@ -185,6 +207,7 @@ namespace Server.Test.Utils
                 },
                 new Card
                 {
+                    Transactions = new List<Transaction>(),
                     CardNumber = _cardNumberGenerator.GenerateNewCardNumber(CardType.MASTERCARD),
                     CardName = "my my lovely wife",
                     Currency = Currency.USD,

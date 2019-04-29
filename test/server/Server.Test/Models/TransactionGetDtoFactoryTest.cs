@@ -36,8 +36,8 @@ namespace Server.Test.Models
                 new CardPostDto
                 {
                     Name = "my card",
-                    Currency = (int)Currency.RUR,
-                    Type = (int)CardType.MAESTRO
+                    Currency = (int) Currency.RUR,
+                    Type = (int) CardType.MAESTRO
                 });
             var fakeTransaction = TestDataGenerator.GenerateFakeTransaction(fakeCard);
 
@@ -59,8 +59,8 @@ namespace Server.Test.Models
                 new CardPostDto
                 {
                     Name = "my card",
-                    Currency = (int)Currency.RUR,
-                    Type = (int)CardType.MAESTRO
+                    Currency = (int) Currency.RUR,
+                    Type = (int) CardType.MAESTRO
                 });
             var fakeTransaction = TestDataGenerator.GenerateFakeTransaction(fakeCard);
             fakeTransaction.Card = null;
@@ -77,8 +77,8 @@ namespace Server.Test.Models
                 new CardPostDto
                 {
                     Name = "my card",
-                    Currency = (int)Currency.RUR,
-                    Type = (int)CardType.MAESTRO
+                    Currency = (int) Currency.RUR,
+                    Type = (int) CardType.MAESTRO
                 });
             var fakeTransaction = TestDataGenerator.GenerateFakeTransaction(fakeCard);
 
@@ -97,8 +97,8 @@ namespace Server.Test.Models
                 new CardPostDto
                 {
                     Name = "my card",
-                    Currency = (int)Currency.RUR,
-                    Type = (int)CardType.MAESTRO
+                    Currency = (int) Currency.RUR,
+                    Type = (int) CardType.MAESTRO
                 });
             var fakeTransactions = TestDataGenerator.GenerateFakeTransactions(fakeCard);
 
@@ -126,8 +126,8 @@ namespace Server.Test.Models
                 new CardPostDto
                 {
                     Name = "my card",
-                    Currency = (int)Currency.RUR,
-                    Type = (int)CardType.MAESTRO
+                    Currency = (int) Currency.RUR,
+                    Type = (int) CardType.MAESTRO
                 });
             var fakeTransactions = TestDataGenerator.GenerateFakeTransactions(fakeCard);
 

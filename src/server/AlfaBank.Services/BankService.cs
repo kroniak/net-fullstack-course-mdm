@@ -13,6 +13,7 @@ using AlfaBank.Services.Interfaces;
 
 namespace AlfaBank.Services
 {
+    /// <inheritdoc />
     public class BankService : IBankService
     {
         private readonly ICardRepository _cardRepository;
@@ -21,6 +22,7 @@ namespace AlfaBank.Services
         private readonly ICurrencyConverter _currencyConverter;
         private readonly ICardNumberGenerator _cardNumberGenerator;
 
+        /// <inheritdoc />
         [ExcludeFromCodeCoverage]
         public BankService(
             ICardRepository cardRepository,
@@ -52,12 +54,10 @@ namespace AlfaBank.Services
             if (validationResult.HasErrors()) return (null, validationResult);
 
             // Select
-            var allCards = _cardRepository.All(user);
-
             var cardNumber = _cardNumberGenerator.GenerateNewCardNumber(cardType);
+            var cardExisting = _cardRepository.Get(user, cardNumber) != null;
 
             // Validation
-            var cardExisting = _businessLogicValidationService.ValidateCardExist(allCards, shortCardName, cardNumber);
             validationResult.AddError(() => cardExisting,
                 "internal", "Card exist", "Карта с таким номером уже существует", TypeCriticalException.CARD);
 
@@ -66,29 +66,35 @@ namespace AlfaBank.Services
             // Create
             var newCard = new Card
             {
+                User = user,
                 CardNumber = cardNumber,
                 CardName = shortCardName,
                 Currency = currency,
-                CardType = cardType
+                CardType = cardType,
+                Transactions = new List<Transaction>()
             };
 
             try
             {
-                _cardRepository.Add(user, newCard);
+                _cardRepository.Add(newCard);
+
                 var addBonusOnOpenFlag = _cardService.TryAddBonusOnOpen(newCard);
 
                 validationResult.AddError(() => !addBonusOnOpenFlag,
-                    "internal", "Add bonus to card failed", "Ошибка при открытии карты", TypeCriticalException.CARD);
+                    "internal",
+                    "Add bonus to card failed",
+                    "Ошибка при открытии карты",
+                    TypeCriticalException.CARD);
 
                 if (validationResult.HasErrors())
                 {
-                    _cardRepository.Remove(user, newCard);
                     return (null, validationResult);
                 }
+
+                _cardRepository.Save();
             }
             catch (Exception e)
             {
-                _cardRepository.Remove(user, newCard);
                 return (null,
                     validationResult.AddError("internal", e.Message ?? "Internal error", "Что то пошло не так",
                         TypeCriticalException.CARD));
@@ -98,12 +104,15 @@ namespace AlfaBank.Services
         }
 
         /// <inheritdoc />
-        public (Transaction, IEnumerable<CustomModelError>) TryTransferMoney(User user, decimal sum, string from,
+        public (Transaction, IEnumerable<CustomModelError>) TryTransferMoney(
+            User user,
+            decimal sum,
+            string from,
             string to)
         {
             // Select
-            var cardFrom = _cardRepository.Get(user, from);
-            var cardTo = _cardRepository.Get(user, to);
+            var cardFrom = _cardRepository.GetWithTransactions(user, from);
+            var cardTo = _cardRepository.GetWithTransactions(user, to);
 
             // Validating
             var validationResult = _businessLogicValidationService.ValidateTransfer(cardFrom, cardTo, sum);
@@ -133,6 +142,10 @@ namespace AlfaBank.Services
 
                 cardFrom.Transactions.Add(fromTransaction);
                 cardTo.Transactions.Add(toTransaction);
+
+                _cardRepository.Update(cardFrom);
+                _cardRepository.Update(cardTo);
+                _cardRepository.Save();
             }
             catch (Exception e)
             {

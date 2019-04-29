@@ -1,12 +1,10 @@
-﻿using AlfaBank.Core.Data;
-using AlfaBank.Core.Data.Interfaces;
+﻿using AlfaBank.Core.Data.Interfaces;
 using AlfaBank.Core.Models;
-using AlfaBank.Services.Interfaces;
-using Moq;
 using Server.Test.Mocks;
 using Server.Test.Mocks.Services;
 using Server.Test.Utils;
 using System.Linq;
+using AlfaBank.Core.Data.Repositories;
 using Xunit;
 
 // ReSharper disable PossibleMultipleEnumeration
@@ -14,9 +12,6 @@ namespace Server.Test.Data
 {
     public class TransactionRepositoryTest
     {
-        private readonly Mock<ICardService> _cardServiceMock;
-        private readonly Mock<ICardRepository> _cardRepositoryMock;
-
         private readonly TestDataGenerator _testDataGenerator;
 
         private readonly ITransactionRepository _transactionsRepository;
@@ -25,32 +20,25 @@ namespace Server.Test.Data
 
         public TransactionRepositoryTest()
         {
-            _cardServiceMock = new CardServiceMockFactory().Mock();
-            _cardRepositoryMock = new Mock<ICardRepository>();
+            var cardServiceMock = new CardServiceMockFactory().Mock();
             var cardNumberGenerator = new CardNumberGeneratorMockFactory().MockObject();
+            _testDataGenerator = new TestDataGenerator(cardServiceMock.Object, cardNumberGenerator);
 
-            _testDataGenerator = new TestDataGenerator(_cardServiceMock.Object, cardNumberGenerator);
+            var context = SqlContextMock.GetSqlContext();
 
-            _transactionsRepository = new TransactionRepository(_cardRepositoryMock.Object);
+            _transactionsRepository = new TransactionRepository(context);
 
-            var cards = _testDataGenerator.GenerateFakeCards();
-            _card = cards.First();
-
-            _user = TestDataGenerator.GenerateFakeUser(cards);
+            _card = context.Cards.First();
+            _user = context.Users.FirstOrDefault(u => u.UserName == "admin@admin.ru");
         }
 
         [Fact]
         public void GetTransactions_ExistCard_ReturnCorrectTransactionsList()
         {
-            // Arrange
-            _cardRepositoryMock.Setup(c => c.Get(_user, _card.CardNumber)).Returns(_card);
-
             // Act
             var transactions = _transactionsRepository.Get(_user, _card.CardNumber, 0, 10);
 
             // Assert
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(3));
-
             Assert.Single(transactions);
             Assert.Null(transactions.First().CardFromNumber);
             Assert.Equal(_card.CardNumber, transactions.First().CardToNumber);
@@ -61,14 +49,10 @@ namespace Server.Test.Data
         public void GetTransactions_NotExistCard_ReturnEmptyResult()
         {
             // Arrange
-            var card = _testDataGenerator.GenerateFakeCard("4790878827491205");
-            _cardRepositoryMock.Setup(c => c.Get(_user, _card.CardNumber)).Returns((Card)null);
+            var card = _testDataGenerator.GenerateFakeCard(_user, "4790878827491205");
 
             // Act
             var transactions = _transactionsRepository.Get(_user, card.CardNumber, 0, 10);
-
-            // Assert
-            _cardServiceMock.Verify(x => x.TryAddBonusOnOpen(It.IsAny<Card>()), Times.Exactly(4));
 
             Assert.Empty(transactions);
         }

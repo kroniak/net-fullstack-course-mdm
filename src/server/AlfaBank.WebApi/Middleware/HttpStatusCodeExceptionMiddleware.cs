@@ -58,7 +58,7 @@ namespace AlfaBank.WebApi.Middleware
             }
             catch (CriticalException ex) when (LogException(context, sw, ex))
             {
-                var code = (int)ex.StatusCode;
+                var code = (int) ex.StatusCode;
 
                 if (context.Response != null && !context.Response.HasStarted)
                 {
@@ -70,7 +70,7 @@ namespace AlfaBank.WebApi.Middleware
             }
             catch (Exception ex) when (LogException(context, sw, ex))
             {
-                const int code = (int)HttpStatusCode.InternalServerError;
+                const int code = (int) HttpStatusCode.InternalServerError;
 
                 if (context.Response != null && !context.Response.HasStarted)
                 {

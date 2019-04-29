@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
-using AlfaBank.Core.Data;
 using AlfaBank.Core.Data.Interfaces;
+using AlfaBank.Core.Data.Repositories;
 using AlfaBank.Core.Models;
 using AlfaBank.Core.Models.Dto;
 using AlfaBank.Core.Models.Factories;
@@ -10,6 +10,9 @@ using AlfaBank.Services.Converters;
 using AlfaBank.Services.Generators;
 using AlfaBank.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+
+// ReSharper disable UnusedMethodReturnValue.Global
+// ReSharper disable UnusedMember.Global
 
 namespace AlfaBank.Services
 {
@@ -22,46 +25,20 @@ namespace AlfaBank.Services
                 throw new ArgumentNullException(nameof(services));
 
             services
-                .AddTransient<ICurrencyConverter, CurrencyConverter>()
-                .AddTransient<ICardChecker, CardChecker>()
-                .AddTransient<ICardService, CardService>()
-                .AddTransient<IBusinessLogicValidationService, BusinessLogicValidationService>()
-                .AddTransient<IDtoValidationService, DtoValidationService>()
-                .AddTransient<IBankService, BankService>()
-                .AddTransient<ICardRepository, CardRepository>()
-                .AddTransient<ITransactionRepository, TransactionRepository>()
-                .AddTransient<ICardNumberGenerator, AlfaCardNumberGenerator>()
-                .AddTransient<IDtoFactory<Card, CardGetDto>, CardGetDtoFactory>()
-                .AddTransient<IDtoFactory<Transaction, TransactionGetDto>, TransactionGetDtoFactory>();
+                .AddSingleton<ICurrencyConverter, CurrencyConverter>()
+                .AddSingleton<ICardChecker, CardChecker>()
+                .AddSingleton<ICardNumberGenerator, AlfaCardNumberGenerator>()
+                .AddSingleton<IDtoValidationService, DtoValidationService>()
+                .AddSingleton<IBusinessLogicValidationService, BusinessLogicValidationService>()
+                .AddScoped<IDtoFactory<Card, CardGetDto>, CardGetDtoFactory>()
+                .AddScoped<IDtoFactory<Transaction, TransactionGetDto>, TransactionGetDtoFactory>()
+                .AddScoped<IUserRepository, UserRepository>()
+                .AddScoped<ICardRepository, CardRepository>()
+                .AddScoped<ITransactionRepository, TransactionRepository>()
+                .AddScoped<ICardService, CardService>()
+                .AddScoped<IBankService, BankService>();
 
             return services;
-        }
-
-        public static IServiceCollection AddInMemoryUserStorage(this IServiceCollection services)
-        {
-            if (services == null)
-                throw new ArgumentNullException(nameof(services));
-
-            var user = GenerateUser();
-
-            services.AddSingleton<IUserRepository>(new InMemoryUserRepository(user));
-
-            return services;
-        }
-
-        /// <summary>
-        /// Generate test user
-        /// </summary>
-        /// <returns> Test user</returns>
-        private static User GenerateUser()
-        {
-            var fakeDataGenerator = new FakeDataGenerator(new CardService(new CardChecker(),
-                new CurrencyConverter()), new AlfaCardNumberGenerator());
-
-            var cards = fakeDataGenerator.GenerateFakeCards();
-            var user = fakeDataGenerator.GenerateFakeUser();
-            user.Cards.AddRange(cards);
-            return user;
         }
     }
 }

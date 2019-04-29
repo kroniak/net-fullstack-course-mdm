@@ -16,13 +16,5 @@ namespace AlfaBank.Services.Interfaces
         /// <param name="to">card to</param>
         /// <param name="sum">sum</param>
         IEnumerable<CustomModelError> ValidateTransfer(Card from, Card to, decimal sum);
-
-        /// <summary>
-        /// Validate exist card by number or by name
-        /// </summary>
-        /// <param name="cards">cards</param>
-        /// <param name="shortCardName">name</param>
-        /// <param name="cardNumber">number</param>
-        bool ValidateCardExist(IEnumerable<Card> cards, string shortCardName, string cardNumber);
     }
 }

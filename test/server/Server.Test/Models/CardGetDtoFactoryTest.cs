@@ -34,8 +34,8 @@ namespace Server.Test.Models
                 new CardPostDto
                 {
                     Name = "my card",
-                    Currency = (int)Currency.RUR,
-                    Type = (int)CardType.MAESTRO
+                    Currency = (int) Currency.RUR,
+                    Type = (int) CardType.MAESTRO
                 });
 
             // Act
@@ -57,8 +57,8 @@ namespace Server.Test.Models
                 new CardPostDto
                 {
                     Name = "my card",
-                    Currency = (int)Currency.RUR,
-                    Type = (int)CardType.MAESTRO
+                    Currency = (int) Currency.RUR,
+                    Type = (int) CardType.MAESTRO
                 });
 
             // Act

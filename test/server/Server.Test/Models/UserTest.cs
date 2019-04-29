@@ -29,7 +29,7 @@ namespace Server.Test.Models
             Assert.Null(user.Firstname);
             Assert.Null(user.Surname);
             Assert.Null(user.Birthday);
-            Assert.Empty(user.Cards);
+            Assert.Null(user.Cards);
         }
 
         [Fact]
@@ -52,7 +52,7 @@ namespace Server.Test.Models
             Assert.Equal(firstname, user.Firstname);
             Assert.Equal(surname, user.Surname);
             Assert.Equal(birthday, user.Birthday);
-            Assert.Empty(user.Cards);
+            Assert.Null(user.Cards);
         }
     }
 }

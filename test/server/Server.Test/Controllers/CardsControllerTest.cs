@@ -23,7 +23,7 @@ using Xunit;
 // ReSharper disable ImplicitlyCapturedClosure
 namespace Server.Test.Controllers
 {
-    public class CardsControllerTest : ControllerTestBase
+    public class CardsControllerTest : ControllerTestBase, IDisposable
     {
         private readonly TestDataGenerator _testDataGenerator;
 
@@ -31,12 +31,14 @@ namespace Server.Test.Controllers
         private readonly IEnumerable<Card> _fakeCards;
         private readonly IEnumerable<CardGetDto> _fakeCardsGetDtoList;
         private readonly User _user;
+        private bool _isUserCall = true;
 
         private readonly Mock<ICardRepository> _cardRepositoryMock;
         private readonly Mock<ICardChecker> _cardCheckerMock;
         private readonly Mock<IBankService> _bankServiceMock;
         private readonly Mock<IDtoValidationService> _dtoValidationServiceMock;
         private readonly Mock<IDtoFactory<Card, CardGetDto>> _dtoFactoryMock;
+        private readonly Mock<IUserRepository> _userRepositoryMock;
 
         private readonly CardsController _controller;
 
@@ -55,16 +57,17 @@ namespace Server.Test.Controllers
             _fakeCards = _testDataGenerator.GenerateFakeCards();
             _fakeCardsGetDtoList = TestDataGenerator.GenerateFakeCardGetDtoList(_fakeCards);
             _user = TestDataGenerator.GenerateFakeUser(_fakeCards);
-            var userRepositoryMock = new UserRepositoryMockFactory(_user).Mock();
-
+            _userRepositoryMock = new UserRepositoryMockFactory(_user).Mock();
             _cardRepositoryMock = new CardsRepositoryMockFactory(_user).Mock();
+
+            _userRepositoryMock.Setup(u => u.GetCurrentUser("admin@admin.ru", It.IsAny<bool>())).Returns(_user);
 
             var objectValidatorMock = GetMockObjectValidator();
 
             _controller = new CardsController(
                 _dtoValidationServiceMock.Object,
                 _cardRepositoryMock.Object,
-                userRepositoryMock.Object,
+                _userRepositoryMock.Object,
                 _cardCheckerMock.Object,
                 _bankServiceMock.Object,
                 _dtoFactoryMock.Object,
@@ -105,6 +108,22 @@ namespace Server.Test.Controllers
 
             Assert.Equal(200, result.StatusCode);
         }
+        
+        [Fact]
+        public void GetCards_UserNotFound_ReturnForbidResult()
+        {
+            // Arrange
+            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), true)).Returns((User) null);
+
+            // Act
+            var result = (ForbidResult) _controller.Get().Result;
+
+            // Assert
+            _cardRepositoryMock.Verify(r => r.GetAllWithTransactions(_user), Times.Never);
+            _dtoFactoryMock.Verify(d => d.Map(It.IsAny<Card>(), It.IsAny<Func<CardGetDto, bool>>()), Times.Never);
+
+            Assert.IsType<ForbidResult>(result);
+        }
 
         [Fact]
         public void GetCard_ValidData_OutDtoValidationFail_ReturnNotFoundResult()
@@ -112,17 +131,35 @@ namespace Server.Test.Controllers
             // Arrange
             var fakeCard = GetCard_ValidData();
             _dtoFactoryMock.Setup(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()))
-                .Returns((CardGetDto)null);
+                .Returns((CardGetDto) null);
 
             // Act
-            var result = (NotFoundResult)_controller.Get(fakeCard.CardNumber).Result;
+            var result = (NotFoundResult) _controller.Get(fakeCard.CardNumber).Result;
 
             // Assert
             _cardCheckerMock.Verify(r => r.CheckCardEmitter(fakeCard.CardNumber), Times.Once);
-            _cardRepositoryMock.Verify(r => r.Get(_user, fakeCard.CardNumber), Times.Once);
-            _dtoFactoryMock.Verify(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()), Times.Once());
+            _cardRepositoryMock.Verify(r => r.GetWithTransactions(_user, fakeCard.CardNumber, true), Times.Once);
+            _dtoFactoryMock.Verify(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()), Times.Once);
 
             Assert.Equal(404, result.StatusCode);
+        }
+
+        [Fact]
+        public void GetCard_UserNotFound_ReturnForbidResult()
+        {
+            // Arrange
+            var fakeCard = GetCard_ValidData();
+            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), true)).Returns((User) null);
+
+            // Act
+            var result = (ForbidResult) _controller.Get(fakeCard.CardNumber).Result;
+
+            // Assert
+            _cardCheckerMock.Verify(r => r.CheckCardEmitter(fakeCard.CardNumber), Times.Once);
+            _cardRepositoryMock.Verify(r => r.GetWithTransactions(_user, fakeCard.CardNumber, true), Times.Never);
+            _dtoFactoryMock.Verify(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()), Times.Never);
+
+            Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
@@ -132,12 +169,12 @@ namespace Server.Test.Controllers
             var fakeCard = GetCard_ValidData();
 
             // Act
-            var result = (OkObjectResult)_controller.Get(fakeCard.CardNumber).Result;
+            var result = (OkObjectResult) _controller.Get(fakeCard.CardNumber).Result;
 
             // Assert
             _cardCheckerMock.Verify(r => r.CheckCardEmitter(fakeCard.CardNumber), Times.Once);
-            _cardRepositoryMock.Verify(r => r.Get(_user, fakeCard.CardNumber), Times.Once);
-            _dtoFactoryMock.Verify(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()), Times.Once());
+            _cardRepositoryMock.Verify(r => r.GetWithTransactions(_user, fakeCard.CardNumber, true), Times.Once);
+            _dtoFactoryMock.Verify(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()), Times.Once);
 
             Assert.Equal(200, result.StatusCode);
         }
@@ -149,12 +186,12 @@ namespace Server.Test.Controllers
             var fakeCard = GetCard_ValidData();
 
             // Act
-            var card = (CardGetDto)((OkObjectResult)_controller.Get(fakeCard.CardNumber).Result).Value;
+            var card = (CardGetDto) ((OkObjectResult) _controller.Get(fakeCard.CardNumber).Result).Value;
 
             // Assert
             _cardCheckerMock.Verify(r => r.CheckCardEmitter(fakeCard.CardNumber), Times.Once);
-            _cardRepositoryMock.Verify(r => r.Get(_user, fakeCard.CardNumber), Times.Once);
-            _dtoFactoryMock.Verify(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()), Times.Once());
+            _cardRepositoryMock.Verify(r => r.GetWithTransactions(_user, fakeCard.CardNumber, true), Times.Once);
+            _dtoFactoryMock.Verify(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()), Times.Once);
 
             Assert.Equal(fakeCard.CardName, card.Name);
             Assert.Equal(fakeCard.CardNumber, card.Number);
@@ -172,11 +209,12 @@ namespace Server.Test.Controllers
         {
             // Act
             var getResult = _controller.Get(cardNumber);
-            var result = (BadRequestObjectResult)getResult.Result;
+            var result = (BadRequestObjectResult) getResult.Result;
 
             // Assert
+            _isUserCall = false;
             _cardCheckerMock.Verify(r => r.CheckCardEmitter(cardNumber), Times.Once);
-            _cardRepositoryMock.Verify(r => r.All(_user), Times.Never);
+            _cardRepositoryMock.Verify(r => r.GetWithTransactions(_user, cardNumber, true), Times.Never);
 
             Assert.IsType<BadRequestObjectResult>(getResult.Result);
             Assert.Equal(400, result.StatusCode);
@@ -187,23 +225,46 @@ namespace Server.Test.Controllers
         public void GetCard_NotExistCardDto_ReturnNotFoundRequest()
         {
             // Arrange
-            var fakeNotExistCard = _testDataGenerator.GenerateFakeCard("4261147885542592");
+            var fakeNotExistCard = _testDataGenerator.GenerateFakeCard(_user, "4261147885542592");
             var cardNumber = fakeNotExistCard.CardNumber;
 
             _cardCheckerMock.Setup(r => r.CheckCardEmitter(cardNumber)).Returns(true);
-            _cardRepositoryMock.Setup(r => r.Get(_user, cardNumber)).Returns((Card)null);
+            _cardRepositoryMock.Setup(r => r.GetWithTransactions(_user, cardNumber, true)).Returns((Card) null);
 
             // Act
             var getResult = _controller.Get(fakeNotExistCard.CardNumber);
-            var result = (NotFoundResult)getResult.Result;
+            var result = (NotFoundResult) getResult.Result;
 
             // Assert
+            _userRepositoryMock.VerifyAll();
+
             _cardCheckerMock.Verify(r => r.CheckCardEmitter(cardNumber), Times.Once);
-            _cardRepositoryMock.Verify(r => r.Get(_user, cardNumber), Times.Once);
+            _cardRepositoryMock.Verify(r => r.GetWithTransactions(_user, cardNumber, true), Times.Once);
 
             Assert.IsType<NotFoundResult>(getResult.Result);
             Assert.Equal(404, result.StatusCode);
             Assert.Null(getResult.Value);
+        }
+        
+        [Fact]
+        public void PostCard_UserNotFound_ReturnForbidResult()
+        {
+            // Arrange
+            var cardDto = PostCard_ValidDto();
+            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), false)).Returns((User) null);
+
+            // Act
+            var result = (ForbidResult) _controller.Post(cardDto).Result;
+
+            // Assert
+            _dtoValidationServiceMock.Verify(v => v.ValidateOpenCardDto(cardDto), Times.Once);
+            _bankServiceMock.Verify(
+                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency) cardDto.Currency, (CardType) cardDto.Type),
+                Times.Never);
+            _cardRepositoryMock.Verify(r => r.Get(_user, It.IsAny<string>()), Times.Never);
+            _dtoFactoryMock.Verify(d => d.Map(It.IsAny<Card>(), It.IsAny<Func<CardGetDto, bool>>()), Times.Never);
+
+            Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
@@ -213,14 +274,14 @@ namespace Server.Test.Controllers
             var cardDto = PostCard_ValidDto();
 
             // Act
-            var result = (CreatedResult)_controller.Post(cardDto).Result;
+            var result = (CreatedResult) _controller.Post(cardDto).Result;
 
             // Assert
             _dtoValidationServiceMock.Verify(v => v.ValidateOpenCardDto(cardDto), Times.Once);
             _bankServiceMock.Verify(
-                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency)cardDto.Currency, (CardType)cardDto.Type),
+                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency) cardDto.Currency, (CardType) cardDto.Type),
                 Times.Once);
-            _cardRepositoryMock.Verify(r => r.All(_user), Times.Never);
+            _cardRepositoryMock.Verify(r => r.Get(_user, It.IsAny<string>()), Times.Never);
 
             Assert.Equal(201, result.StatusCode);
         }
@@ -232,14 +293,14 @@ namespace Server.Test.Controllers
             var cardDto = PostCard_ValidDto();
 
             // Act
-            var resultCard = (CardGetDto)((CreatedResult)_controller.Post(cardDto).Result).Value;
+            var resultCard = (CardGetDto) ((CreatedResult) _controller.Post(cardDto).Result).Value;
 
             // Assert
             _dtoValidationServiceMock.Verify(v => v.ValidateOpenCardDto(cardDto), Times.Once);
             _bankServiceMock.Verify(
-                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency)cardDto.Currency, (CardType)cardDto.Type),
+                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency) cardDto.Currency, (CardType) cardDto.Type),
                 Times.Once);
-            _cardRepositoryMock.Verify(r => r.All(_user), Times.Never);
+            _cardRepositoryMock.Verify(r => r.GetWithTransactions(_user, It.IsAny<string>(), false), Times.Never);
 
             Assert.Equal(10, resultCard.Balance);
             Assert.Equal(cardDto.Name, resultCard.Name);
@@ -264,7 +325,7 @@ namespace Server.Test.Controllers
                 .Setup(m => m.ValidateOpenCardDto(cardDto)).Returns(Enumerable.Empty<CustomModelError>());
 
             _bankServiceMock
-                .Setup(r => r.TryOpenNewCard(_user, cardDto.Name, (Currency)cardDto.Currency, (CardType)cardDto.Type))
+                .Setup(r => r.TryOpenNewCard(_user, cardDto.Name, (Currency) cardDto.Currency, (CardType) cardDto.Type))
                 .Returns(
                     (null, new List<CustomModelError>
                     {
@@ -277,12 +338,12 @@ namespace Server.Test.Controllers
                     }));
 
             // Act
-            var result = (BadRequestObjectResult)_controller.Post(cardDto).Result;
+            var result = (BadRequestObjectResult) _controller.Post(cardDto).Result;
 
             // Assert
             _dtoValidationServiceMock.Verify(v => v.ValidateOpenCardDto(cardDto), Times.Once);
             _bankServiceMock.Verify(
-                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency)cardDto.Currency, (CardType)cardDto.Type),
+                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency) cardDto.Currency, (CardType) cardDto.Type),
                 Times.Once);
 
             Assert.Equal(400, result.StatusCode);
@@ -295,15 +356,15 @@ namespace Server.Test.Controllers
             var cardDto = PostCard_ValidDto();
 
             _dtoFactoryMock.Setup(d => d.Map(It.IsAny<Card>(), It.IsAny<Func<CardGetDto, bool>>()))
-                .Returns((CardGetDto)null);
+                .Returns((CardGetDto) null);
 
             // Act
-            var result = (BadRequestObjectResult)_controller.Post(cardDto).Result;
+            var result = (BadRequestObjectResult) _controller.Post(cardDto).Result;
 
             // Assert
             _dtoValidationServiceMock.Verify(v => v.ValidateOpenCardDto(cardDto), Times.Once);
             _bankServiceMock.Verify(
-                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency)cardDto.Currency, (CardType)cardDto.Type),
+                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency) cardDto.Currency, (CardType) cardDto.Type),
                 Times.Once);
             _dtoFactoryMock.Verify(d => d.Map(It.IsAny<Card>(), It.IsAny<Func<CardGetDto, bool>>()), Times.Once);
 
@@ -329,6 +390,7 @@ namespace Server.Test.Controllers
                     Message = string.Empty
                 }
             };
+            _isUserCall = false;
 
             PostCard_Field_ReturnBadRequest(cardDto, validationResultFake);
         }
@@ -355,6 +417,7 @@ namespace Server.Test.Controllers
                 }
             };
 
+            _isUserCall = false;
             PostCard_Field_ReturnBadRequest(cardDto, validationResultFake);
         }
 
@@ -380,6 +443,7 @@ namespace Server.Test.Controllers
                 }
             };
 
+            _isUserCall = false;
             PostCard_Field_ReturnBadRequest(cardDto, validationResultFake);
         }
 
@@ -387,7 +451,8 @@ namespace Server.Test.Controllers
         public void PutCard_ReturnNotAllowed()
         {
             // Act
-            var result = (StatusCodeResult)_controller.Put();
+            var result = (StatusCodeResult) _controller.Put();
+            _isUserCall = false;
 
             // Assert
             Assert.Equal(405, result.StatusCode);
@@ -397,7 +462,8 @@ namespace Server.Test.Controllers
         public void DeleteCard_ReturnNotAllowed()
         {
             // Act
-            var result = (StatusCodeResult)_controller.Delete();
+            var result = (StatusCodeResult) _controller.Delete();
+            _isUserCall = false;
 
             // Assert
             Assert.Equal(405, result.StatusCode);
@@ -410,12 +476,12 @@ namespace Server.Test.Controllers
                 .Returns(_fakeCardsGetDtoList);
 
             // Act
-            var result = (OkObjectResult)_controller.Get().Result;
-            var cards = (IEnumerable<CardGetDto>)result.Value;
+            var result = (OkObjectResult) _controller.Get().Result;
+            var cards = (IEnumerable<CardGetDto>) result.Value;
 
             // Assert
-            _cardRepositoryMock.Verify(r => r.All(_user), Times.Once);
-            _dtoFactoryMock.Verify(d => d.Map(_fakeCards, It.IsAny<Func<CardGetDto, bool>>()), Times.Once());
+            _cardRepositoryMock.Verify(r => r.GetAllWithTransactions(_user), Times.Once);
+            _dtoFactoryMock.Verify(d => d.Map(_fakeCards, It.IsAny<Func<CardGetDto, bool>>()), Times.Once);
             return (result, cards);
         }
 
@@ -427,12 +493,12 @@ namespace Server.Test.Controllers
             _dtoValidationServiceMock.Setup(s => s.ValidateOpenCardDto(cardDto)).Returns(validationResultFake);
 
             // Act
-            var result = (BadRequestObjectResult)_controller.Post(cardDto).Result;
+            var result = (BadRequestObjectResult) _controller.Post(cardDto).Result;
 
             // Assert
             _dtoValidationServiceMock.Verify(v => v.ValidateOpenCardDto(cardDto), Times.Once);
             _bankServiceMock.Verify(
-                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency)cardDto.Currency, (CardType)cardDto.Type),
+                v => v.TryOpenNewCard(_user, cardDto.Name, (Currency) cardDto.Currency, (CardType) cardDto.Type),
                 Times.Never);
 
             Assert.Equal(400, result.StatusCode);
@@ -454,7 +520,7 @@ namespace Server.Test.Controllers
                 .Setup(m => m.ValidateOpenCardDto(cardDto)).Returns(Enumerable.Empty<CustomModelError>());
 
             _bankServiceMock
-                .Setup(r => r.TryOpenNewCard(_user, cardDto.Name, (Currency)cardDto.Currency, (CardType)cardDto.Type))
+                .Setup(r => r.TryOpenNewCard(_user, cardDto.Name, (Currency) cardDto.Currency, (CardType) cardDto.Type))
                 .Returns((fakeCard, Enumerable.Empty<CustomModelError>()));
 
             _dtoFactoryMock.Setup(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()))
@@ -465,20 +531,19 @@ namespace Server.Test.Controllers
 
         private Card GetCard_ValidData()
         {
+            // Arrange
             var fakeCard = _testDataGenerator.GenerateFakeCard(
                 new CardPostDto
                 {
                     Name = "my card",
-                    Currency = (int)Currency.RUR,
-                    Type = (int)CardType.MAESTRO
+                    Currency = (int) Currency.RUR,
+                    Type = (int) CardType.MAESTRO
                 });
 
             var fakeCardGetDto = TestDataGenerator.GenerateFakeCardGetDto(fakeCard);
 
-            _cardRepositoryMock.Setup(r => r.Get(_user, fakeCard.CardNumber)).Returns(fakeCard);
             _cardCheckerMock.Setup(r => r.CheckCardEmitter(fakeCard.CardNumber)).Returns(true);
-
-            // Arrange
+            _cardRepositoryMock.Setup(r => r.GetWithTransactions(_user, fakeCard.CardNumber, true)).Returns(fakeCard);
             _dtoFactoryMock.Setup(d => d.Map(fakeCard, It.IsAny<Func<CardGetDto, bool>>()))
                 .Returns(fakeCardGetDto);
 
@@ -492,13 +557,19 @@ namespace Server.Test.Controllers
                 .Returns(Enumerable.Empty<CardGetDto>());
 
             // Act
-            var result = (OkObjectResult)_controller.Get().Result;
-            var cards = (IEnumerable<CardGetDto>)result.Value;
+            var result = (OkObjectResult) _controller.Get().Result;
+            var cards = (IEnumerable<CardGetDto>) result.Value;
 
             // Assert
-            _cardRepositoryMock.Verify(r => r.All(_user), Times.Once);
-            _dtoFactoryMock.Verify(d => d.Map(_fakeCards, It.IsAny<Func<CardGetDto, bool>>()), Times.Once());
+            _cardRepositoryMock.Verify(r => r.GetAllWithTransactions(_user), Times.Once);
+            _dtoFactoryMock.Verify(d => d.Map(_fakeCards, It.IsAny<Func<CardGetDto, bool>>()), Times.Once);
             return (result, cards);
+        }
+
+        public void Dispose()
+        {
+            if (_isUserCall)
+                _userRepositoryMock.Verify(u => u.GetCurrentUser("admin@admin.ru", It.IsAny<bool>()), Times.Once);
         }
     }
 }
