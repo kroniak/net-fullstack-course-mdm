@@ -94,6 +94,8 @@ namespace Server.Test.Controllers
             _cardCheckerMock.Verify(r => r.CheckCardEmitter(value), Times.Once);
 
             Assert.IsType<BadRequestObjectResult>(getResult.Result);
+            Assert.True(_controller.ModelState.Keys.Contains("number"));
+            Assert.Equal("This card number is invalid", _controller.ModelState.Values.ElementAt(0).Errors.ElementAt(0).ErrorMessage);
             Assert.Equal(400, result.StatusCode);
         }
 
