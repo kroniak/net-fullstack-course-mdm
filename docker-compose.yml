@@ -1,0 +1,19 @@
+version: '3.0'
+services:
+  elk:
+    image: sebp/elk
+    container_name: alfabank-service-elk-prod
+    ports:
+      - "5601:5601"
+
+  service:
+    image: alfabank-service
+    container_name: alfabank-service-prod
+    depends_on:
+      - elk
+    links:
+      - elk
+    ports:
+      - "5000:5000"
+    volumes:
+      - /tmp/alfabank-service-logs:/app/logs
