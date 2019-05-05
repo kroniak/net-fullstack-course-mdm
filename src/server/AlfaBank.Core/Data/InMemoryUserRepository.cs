@@ -6,7 +6,7 @@ using AlfaBank.Core.Models;
 namespace AlfaBank.Core.Data
 {
     /// <inheritdoc />
-    public class InMemoryUserRepository : IUserRepository
+    public class InMemoryUserRepository
     {
         private readonly User _currentUser;
 

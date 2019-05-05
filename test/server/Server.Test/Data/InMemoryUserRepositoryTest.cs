@@ -12,7 +12,7 @@ namespace Server.Test.Data
 {
     public class InMemoryUserRepositoryTest
     {
-        private readonly IUserRepository _userRepository;
+        private readonly InMemoryUserRepository _userRepository;
 
         public InMemoryUserRepositoryTest()
         {

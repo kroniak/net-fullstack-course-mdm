@@ -1,0 +1,17 @@
+{
+    "stryker-config":
+    {      
+        "reporters":[
+            "ConsoleProgressBar",
+            "ConsoleReport"
+        ],  
+        "log-level":"info",
+        "timeout-ms":10000,
+        "log-file":true,
+        "project-file":"AlfaBank.Core.csproj",
+        "max-concurrent-test-runners":4,
+        "threshold-high":80,
+        "threshold-low":70,
+        "threshold-break":60
+    }
+}
