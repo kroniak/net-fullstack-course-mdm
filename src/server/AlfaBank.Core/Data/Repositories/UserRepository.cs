@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using AlfaBank.Core.Data.Interfaces;
@@ -21,14 +20,6 @@ namespace AlfaBank.Core.Data.Repositories
         /// <inheritdoc />
         public User GetCurrentUser(string userName, bool noTracking = true) =>
             Get(u => u.UserName == userName, noTracking)
-                .FirstOrDefault();
-
-        /// <inheritdoc />
-        public User GetCurrentUserWithCards(string userName) =>
-            GetWithInclude(
-                    u => u.UserName.Equals(userName, StringComparison.OrdinalIgnoreCase),
-                    true,
-                    u => u.Cards)
                 .FirstOrDefault();
     }
 }

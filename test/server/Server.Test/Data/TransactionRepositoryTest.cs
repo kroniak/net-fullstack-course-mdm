@@ -4,6 +4,7 @@ using Server.Test.Mocks;
 using Server.Test.Mocks.Services;
 using Server.Test.Utils;
 using System.Linq;
+using AlfaBank.Core.Data;
 using AlfaBank.Core.Data.Repositories;
 using Xunit;
 
@@ -17,6 +18,7 @@ namespace Server.Test.Data
         private readonly ITransactionRepository _transactionsRepository;
         private readonly Card _card;
         private readonly User _user;
+        private readonly SqlContext _context;
 
         public TransactionRepositoryTest()
         {
@@ -24,12 +26,12 @@ namespace Server.Test.Data
             var cardNumberGenerator = new CardNumberGeneratorMockFactory().MockObject();
             _testDataGenerator = new TestDataGenerator(cardServiceMock.Object, cardNumberGenerator);
 
-            var context = SqlContextMock.GetSqlContext();
+            _context = SqlContextMock.GetSqlContext();
 
-            _transactionsRepository = new TransactionRepository(context);
+            _transactionsRepository = new TransactionRepository(_context);
 
-            _card = context.Cards.First();
-            _user = context.Users.FirstOrDefault(u => u.UserName == "admin@admin.ru");
+            _card = _context.Cards.First();
+            _user = _context.Users.FirstOrDefault(u => u.UserName == "admin@admin.ru");
         }
 
         [Fact]
@@ -40,6 +42,7 @@ namespace Server.Test.Data
 
             // Assert
             Assert.Single(transactions);
+            Assert.False(_context.Tracked(transactions));
             Assert.Null(transactions.First().CardFromNumber);
             Assert.Equal(_card.CardNumber, transactions.First().CardToNumber);
             Assert.Equal(10M, transactions.First().Sum);

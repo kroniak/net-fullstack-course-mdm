@@ -45,6 +45,7 @@ namespace Server.Test.Data
 
             // Assert
             Assert.Equal(4, cards.Count());
+            Assert.False(_context.Tracked(cards));
             Assert.All(
                 cards,
                 c =>
@@ -66,6 +67,7 @@ namespace Server.Test.Data
             var card = _cardRepository.Get(_user, _card.CardNumber);
 
             Assert.Null(card.Transactions);
+            Assert.True(_context.Tracked(card));
             Assert.Equal(_card.ValidityYear, card.ValidityYear);
             Assert.Equal(_card.Currency, card.Currency);
             Assert.Equal(_card.CardNumber, card.CardNumber);
@@ -80,11 +82,25 @@ namespace Server.Test.Data
             var card = _cardRepository.GetWithTransactions(_user, _card.CardNumber);
 
             Assert.Single(card.Transactions);
+            Assert.True(_context.Tracked(card));
             Assert.Equal(_card.ValidityYear, card.ValidityYear);
             Assert.Equal(_card.Currency, card.Currency);
             Assert.Equal(_card.CardNumber, card.CardNumber);
             Assert.Equal(_card.DtOpenCard, card.DtOpenCard);
             Assert.Equal(_card.CardType, card.CardType);
+        }
+
+        [Fact]
+        public void GetWithTransactions_NonExistCard_ReturnNullCard()
+        {
+            // Arrange
+            var cardDto = _testDataGenerator.GenerateFakeCard(_user, "4790878827491205");
+
+            // Act
+            var card = _cardRepository.GetWithTransactions(_user, cardDto.CardNumber);
+
+            // Assert
+            Assert.Null(card);
         }
 
         [Fact]

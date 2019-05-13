@@ -14,11 +14,5 @@ namespace AlfaBank.Core.Data.Interfaces
         /// <param name="userName">Username of the user</param>
         /// <param name="noTracking"></param>
         User GetCurrentUser(string userName, bool noTracking = true);
-
-        /// <summary>
-        /// Get current logged user from db with cards projection
-        /// </summary>
-        /// <param name="userName">Username of the user</param>
-        User GetCurrentUserWithCards(string userName);
     }
 }

@@ -27,6 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\src\server\AlfaBank.Core\AlfaBank.Core.csproj" />
+    <ProjectReference Include="..\..\..\src\server\AlfaBank.Services\AlfaBank.Services.csproj" />
     <ProjectReference Include="..\..\..\src\server\AlfaBank.WebApi\AlfaBank.WebApi.csproj" />
   </ItemGroup>
 
