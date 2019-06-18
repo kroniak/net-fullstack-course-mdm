@@ -1,0 +1,11 @@
+html, body {
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+    font-family: 'Open Sans';
+    color: #000;
+    background-color: #fff;
+}

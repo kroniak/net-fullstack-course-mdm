@@ -43,7 +43,7 @@ namespace AlfaBank.WebApi.HostedServices
         {
             _logger.LogInformation("Tariff Background Service is starting.");
 
-            _timer = new Timer(BackgroundTask, new { }, TimeSpan.Zero, TimeSpan.FromSeconds(30));
+            _timer = new Timer(BackgroundTask, new { }, TimeSpan.Zero, TimeSpan.FromMinutes(5));
 
             return Task.CompletedTask;
         }
