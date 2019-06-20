@@ -1,4 +1,5 @@
 import {fetchCard} from "./cards";
+import {fetchTransactions} from "./transactions";
 
 import axios from "axios";
 import {PAYMENT_FAILED, PAYMENT_REPEAT, PAYMENT_SUCCESS} from "./types";
@@ -30,6 +31,7 @@ export const TransferMoney = (from, to, sum) => {
                         payload: response.data
                     });
                     dispatch(fetchCard(from));
+                    dispatch(fetchTransactions(from));
                 }
             })
             .catch(err => {
@@ -42,6 +44,8 @@ export const TransferMoney = (from, to, sum) => {
                         transaction
                     }
                 });
+
+                dispatch(fetchTransactions(from));
 
                 console.error(
                     err.response.data.message

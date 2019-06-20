@@ -94,7 +94,7 @@ namespace Server.Test.Data
         public void GetWithTransactions_NonExistCard_ReturnNullCard()
         {
             // Arrange
-            var cardDto = _testDataGenerator.GenerateFakeCard(_user, "4790878827491205");
+            var cardDto = _testDataGenerator.GenerateFakeCard(_user, "5315618148729302");
 
             // Act
             var card = _cardRepository.GetWithTransactions(_user, cardDto.CardNumber);

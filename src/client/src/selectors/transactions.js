@@ -5,6 +5,7 @@ import { getActiveCard } from "./cards";
 const separateByDates = (transactions, activeCard) => {
   const creditDebitFlag = ({ from, to }) => {
     if (from == null) return 1;
+    else if (to == null) return -1;
     else if (activeCard.number === from) return 0;
     else if (activeCard.number === to) return 2;
   };
@@ -15,6 +16,7 @@ const separateByDates = (transactions, activeCard) => {
     if (flag === 1) return "Операция пополнения при открытии";
     else if (flag === 0) return `Операция перевода на ${item.to}`;
     else if (flag === 2) return `Операция перевода с ${item.from}`;
+    else if (flag === -1) return `Операция снятия комиссии с ${item.from}`;
   };
 
   const sortedData = transactions.sort((a, b) => {
@@ -56,7 +58,7 @@ const separateByDates = (transactions, activeCard) => {
   }, []);
 };
 
-const getTransactions = state => [];
+const getTransactions = state => state.transactions.data;
 
 export const getTransactionsByDays = createSelector(
   [getTransactions, getActiveCard],

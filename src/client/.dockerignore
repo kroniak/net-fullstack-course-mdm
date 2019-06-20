@@ -1,0 +1,16 @@
+.git
+.gitignore
+.idea
+node_modules
+logs
+**/*.info
+**/*.log
+**/*.md
+**/*.user
+.DS_Store
+.dockerignore
+.vscode
+Dockerfile
+**/bin
+**/obj
+out

@@ -1,3 +1,5 @@
+import {fetchTransactions} from "./transactions";
+
 import axios from "axios";
 
 import {
@@ -140,4 +142,5 @@ export const changeActiveCard = number => (dispatch, getState) => {
     });
 
     dispatch(fetchCard(number));
+    dispatch(fetchTransactions(number));
 };

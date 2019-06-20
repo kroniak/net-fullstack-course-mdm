@@ -5,7 +5,11 @@ import styled from "@emotion/styled";
 
 import History from "./history";
 import Payment from "../payment/payment";
-import {isExpiredCard} from "../../selectors/cards";
+
+import {fetchCards} from "../../actions/cards";
+import {fetchTransactions} from "../../actions/transactions";
+import {getActiveCard, isExpiredCard} from "../../selectors/cards";
+import {getTransactionsByDays} from "../../selectors/transactions";
 
 const Workspace = styled.div`
   display: flex;
@@ -27,6 +31,7 @@ class Home extends Component {
             transactionsIsLoading,
             transactionsSkip,
             transactionsCount,
+            fetchTransactions
         } = this.props;
 
         if (activeCard)
@@ -43,6 +48,7 @@ class Home extends Component {
                         isLoading={transactionsIsLoading}
                         skip={transactionsSkip}
                         count={transactionsCount}
+                        buttonClick={fetchTransactions}
                     />
                     <Payment/>
                 </Workspace>
@@ -59,15 +65,16 @@ Home.propTypes = {
 };
 
 const mapStateToProps = state => ({
-    transactions: [],
-    activeCard: 0,
-    transactionsIsLoading: false,
-    transactionsSkip: 0,
-    transactionsCount: 0
+    transactions: getTransactionsByDays(state),
+    activeCard: getActiveCard(state),
+    transactionsIsLoading: state.transactions.isLoading,
+    transactionsSkip: state.transactions.skip,
+    transactionsCount: state.transactions.count
 });
 
 const mapDispatchToProps = dispatch => ({
-    fetchCards: () => dispatch({type: "TODO"}),
+    fetchCards: () => dispatch(fetchCards()),
+    fetchTransactions: (number, skip) => dispatch(fetchTransactions(number, skip))
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(Home);
