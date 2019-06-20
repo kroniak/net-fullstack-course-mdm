@@ -1,3 +1,5 @@
+import {fetchTransactions} from "./transactions";
+
 import axios from "axios";
 
 import {
@@ -62,13 +64,20 @@ export const addCard = (currency, type, name) => dispatch => {
  * Вытаскивает данные по картам пользователя
  *
  */
-export const fetchCards = () => dispatch => {
+export const fetchCards = () => (dispatch, getState) => {
+        const {isAuth, token} = getState().auth;
+        if (!isAuth || !token) return;
+
         dispatch({
             type: CARDS_FETCH_STARTED
         });
 
         axios
-            .get(`${ROOT_URL}/cards`)
+            .get(`${ROOT_URL}/cards`, {
+                params: {
+                    key: token
+                }
+            })
             .then(response => {
                     if (response.status === 200) {
                         dispatch({
@@ -140,4 +149,5 @@ export const changeActiveCard = number => (dispatch, getState) => {
     });
 
     dispatch(fetchCard(number));
+    dispatch(fetchTransactions(number));
 };

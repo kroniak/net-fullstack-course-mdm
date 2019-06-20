@@ -5,7 +5,7 @@ import moment from "moment";
 import Island from "../misc/island";
 
 const HistoryLayout = styled(Island)`
-  width: 620px;
+  width: 800px;
   max-height: 622px;
   overflow-y: scroll;
   padding: 0;

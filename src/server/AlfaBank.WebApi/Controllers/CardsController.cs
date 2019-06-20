@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Authorization;
 
 // ReSharper disable PossibleMultipleEnumeration
 namespace AlfaBank.WebApi.Controllers
@@ -26,6 +27,7 @@ namespace AlfaBank.WebApi.Controllers
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [BindProperties]
+    [Authorize]
     public class CardsController : ControllerBase
     {
         private readonly IUserRepository _userRepository;

@@ -1,4 +1,4 @@
-import {ACTIVE_CARD_CHANGED, PAYMENT_FAILED, PAYMENT_REPEAT, PAYMENT_SUCCESS} from "../actions/types";
+import {ACTIVE_CARD_CHANGED, PAYMENT_FAILED, PAYMENT_REPEAT, PAYMENT_SUCCESS, USER_LOGOUT} from "../actions/types";
 
 const initialState = {
     stage: "contract",
@@ -8,6 +8,8 @@ const initialState = {
 
 export default (state = initialState, {type, payload}) => {
     switch (type) {
+        case USER_LOGOUT: return initialState;
+
         case PAYMENT_REPEAT:
             return initialState;
 

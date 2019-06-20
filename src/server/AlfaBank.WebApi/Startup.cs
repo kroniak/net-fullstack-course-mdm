@@ -113,6 +113,12 @@ namespace AlfaBank.WebApi
             services
                 .AddCustomHealthChecks()
                 .AddElkHealthChecks(_configuration);
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("AllowMyOrigin",
+                    builder => builder.WithOrigins("http://localhost:3000"));
+            });
         }
 
         /// <summary>
@@ -154,6 +160,7 @@ namespace AlfaBank.WebApi
 
             app.UseCustomHealthCheckEndpoints();
 
+            app.UseCors("AllowMyOrigin");
             app.UseMvc();
         }
     }

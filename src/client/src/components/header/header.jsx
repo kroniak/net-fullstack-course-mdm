@@ -3,6 +3,7 @@ import {connect} from "react-redux";
 import styled from "@emotion/styled";
 import Title from "../misc/title";
 import UserInfo from "./user-info";
+import Authenticated from "../auth/authenticated";
 
 import {getActiveCard} from "../../selectors/cards";
 
@@ -42,7 +43,7 @@ class Header extends React.Component {
     render() {
         return (
             <HeaderLayout>
-                {this.renderBalance()}
+                <Authenticated>{this.renderBalance()}</Authenticated>
                 <Title>Электронный кошелек</Title>
                 <UserInfo/>
             </HeaderLayout>
@@ -51,6 +52,7 @@ class Header extends React.Component {
 }
 
 const mapStateToProps = state => ({
+    isAuth: state.auth.isAuth,
     activeCard: getActiveCard(state)
 });
 

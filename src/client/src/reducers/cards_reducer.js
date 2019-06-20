@@ -5,7 +5,7 @@ import {
     CARD_FETCH_SUCCESS,
     CARDS_FETCH_FAILED,
     CARDS_FETCH_STARTED,
-    CARDS_FETCH_SUCCESS
+    CARDS_FETCH_SUCCESS, USER_LOGOUT
 } from "../actions/types";
 
 /**
@@ -35,10 +35,12 @@ const initialState = {
 
 export default (state = initialState, {type, payload}) => {
     switch (type) {
+        case USER_LOGOUT: return initialState;
+
         case CARDS_FETCH_STARTED:
             return {
                 ...state,
-                isLoading: state.data.length === 0 ? true : false
+                isLoading: state.data.length === 0
             };
 
         case CARD_ADD_FAILED:

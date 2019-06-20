@@ -10,4 +10,6 @@ SCRIPT_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 docker build -t alfabank-service:latest "$SCRIPT_ROOT/.."
 
+docker build -t alfabank-service-cli:latest "$SCRIPT_ROOT/../src/client"
+
 docker rmi -f $(docker images -q --filter "dangling=true")

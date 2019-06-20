@@ -8,6 +8,7 @@ import {getPreparedCards} from "../../selectors/cards";
 import Card from "./card";
 import CardAdd from "./card_add";
 import PropTypes from "prop-types";
+import Authenticated from "../auth/authenticated";
 
 const Layout = styled.div`
   display: flex;
@@ -90,14 +91,16 @@ class CardsBar extends Component {
 
         return (
             <Layout>
-                <CardsList>
-                    {this.renderCards()}
-                    {isLoading ? (
-                        <div/>
-                    ) : (
-                        <Card type="new" onChangeAddMode={e => this.onSetAddMode(e)}/>
-                    )}
-                </CardsList>
+                <Authenticated>
+                    <CardsList>
+                        {this.renderCards()}
+                        {isLoading ? (
+                            <div/>
+                        ) : (
+                            <Card type="new" onChangeAddMode={e => this.onSetAddMode(e)}/>
+                        )}
+                    </CardsList>
+                </Authenticated>
                 <Footer>Альфа-Банк</Footer>
             </Layout>
         );
@@ -113,6 +116,7 @@ CardsBar.propTypes = {
 };
 
 const mapStateToProps = state => ({
+    isAuth: state.auth.isAuth,
     cards: getPreparedCards(state),
     error: state.cards.error,
     activeCardNumber: state.cards.activeCardNumber,
