@@ -18,8 +18,22 @@ namespace AlfaBank.Core.Data.Repositories
         }
 
         /// <inheritdoc />
-        public User GetCurrentUser(string userName, bool noTracking = true) =>
-            Get(u => u.UserName == userName, noTracking)
+        public User GetUser(string userName, bool noTracking = true)
+        {
+            var user = Get(u => u.UserName == userName, noTracking)
+                .FirstOrDefault();
+
+            if (user != null)
+            {
+                user.Password = null;
+            }
+
+            return user;
+        }
+
+        /// <inheritdoc />
+        public User GetSecureUser(string userName) =>
+            Get(u => u.UserName == userName)
                 .FirstOrDefault();
     }
 }

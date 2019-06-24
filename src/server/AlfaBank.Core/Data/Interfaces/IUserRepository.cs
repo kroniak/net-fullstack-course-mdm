@@ -12,7 +12,15 @@ namespace AlfaBank.Core.Data.Interfaces
         /// Get current logged user from db
         /// </summary>
         /// <param name="userName">Username of the user</param>
-        /// <param name="noTracking"></param>
-        User GetCurrentUser(string userName, bool noTracking = true);
+        /// <param name="noTracking">Turn on noTracking or not</param>
+        /// <returns>User</returns>
+        User GetUser(string userName, bool noTracking = true);
+
+        /// <summary>
+        /// Get user with password with noTracking
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns>User</returns>
+        User GetSecureUser(string userName);
     }
 }

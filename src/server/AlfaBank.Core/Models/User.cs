@@ -20,15 +20,20 @@ namespace AlfaBank.Core.Models
         /// Create new User
         /// </summary>
         /// <param name="userName">Login of the user</param>
-        public User(string userName)
+        /// <param name="password">Password for the user</param>
+        public User(string userName, string password)
         {
             if (string.IsNullOrWhiteSpace(userName))
                 throw new CriticalException("username is null or empty");
+
+            if (string.IsNullOrWhiteSpace(password))
+                throw new CriticalException("password is null or empty");
 
             try
             {
                 var mail = new MailAddress(userName);
                 UserName = mail.ToString();
+                Password = password;
             }
             catch (FormatException)
             {
@@ -47,6 +52,12 @@ namespace AlfaBank.Core.Models
         /// </summary>
         [Required]
         public string UserName { get; set; }
+
+        /// <summary>
+        /// Hashed password
+        /// </summary>
+        [Required]
+        public string Password { get; set; }
 
         /// <summary>
         /// Getter and setter Surname of the user

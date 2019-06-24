@@ -34,8 +34,7 @@ namespace AlfaBank.Core.Data.Interfaces
         /// <summary>
         /// Get cards count for the current user
         /// </summary>
-        /// <param name="user"> current user</param>
         /// <returns>Count of the cards</returns>
-        int Count(User user);
+        int Count();
     }
 }

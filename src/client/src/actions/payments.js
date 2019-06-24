@@ -21,9 +21,14 @@ export const TransferMoney = (from, to, sum) => {
         sum
     };
 
-    return dispatch => {
+    return (dispatch, getState) => {
+        const {isAuth, token} = getState().auth;
+        if (!isAuth || !token) return;
+
         axios
-            .post(`${ROOT_URL}/transactions`, transaction)
+            .post(`${ROOT_URL}/transactions`, transaction, {
+                headers: {'Authorization': "Bearer " + token}
+            })
             .then(response => {
                 if (response.status === 201) {
                     dispatch({

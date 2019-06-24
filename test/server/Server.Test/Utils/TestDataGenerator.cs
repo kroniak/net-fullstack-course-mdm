@@ -26,7 +26,7 @@ namespace Server.Test.Utils
 
         public static User GenerateFakeUser(IEnumerable<Card> cards)
         {
-            var user = new User("admin@admin.net") {Cards = new List<Card>()};
+            var user = new User("admin@admin.net", "123") {Cards = new List<Card>()};
             user.Cards.AddRange(cards);
 
             return user;
@@ -120,7 +120,7 @@ namespace Server.Test.Utils
                 DateTime = transaction.DateTime
             });
 
-        public User GenerateFakeUser() => new User("admin@admin.net");
+        public User GenerateFakeUser() => new User("admin@admin.net", "123");
 
         public Card GenerateFakeCard(CardPostDto cardDto)
         {

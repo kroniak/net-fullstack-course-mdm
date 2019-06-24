@@ -66,7 +66,7 @@ class PaymentContract extends Component {
         this.setState({
             withdrawCardIndex
         });
-    }
+    };
 
     /**
      * Обработка изменения значения в input
@@ -78,7 +78,7 @@ class PaymentContract extends Component {
         this.setState({
             sum: event.target.value
         });
-    }
+    };
 
     /**
      * Отправка формы
@@ -99,7 +99,7 @@ class PaymentContract extends Component {
         onPaymentSubmit(activeCard.number, withdrawCard.number, sum);
 
         this.setState({sum: 0});
-    }
+    };
 
     /**
      * Функция отрисовки компонента

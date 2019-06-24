@@ -15,14 +15,16 @@ namespace Server.Test.Data
             _userRepository = new UserRepository(SqlContextMock.GetSqlContext());
         }
 
-        [Fact]
-        public void GetCurrentUser_ReturnCorrectUser()
+        [Theory]
+        [InlineData("alice@alfabank.ru")]
+        [InlineData("bob@alfabank.ru")]
+        public void GetCurrentUser_ReturnCorrectUser(string userName)
         {
             // Act
-            var user = _userRepository.GetCurrentUser("admin@admin.ru");
+            var user = _userRepository.GetUser(userName);
 
             // Assert
-            Assert.Equal("admin@admin.ru", user.UserName);
+            Assert.Equal(userName, user.UserName);
         }
     }
 }

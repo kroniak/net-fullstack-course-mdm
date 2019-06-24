@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using AlfaBank.Core.Infrastructure;
 using AlfaBank.Core.Models;
+using Microsoft.AspNetCore.Identity;
 
 // ReSharper disable LoopCanBeConvertedToQuery
 
@@ -18,60 +19,77 @@ namespace AlfaBank.Core.Data
         /// <param name="userNames"></param>
         /// <returns>Enumerable of Fake users</returns>
         public static IEnumerable<User> GenerateFakeUsers(IEnumerable<string> userNames) =>
-            userNames.Select((name, i) => new User(name) {Id = i + 1});
+            userNames.Select((name, i) =>
+            {
+                const string password = "12345678";
+                var user = new User(name, "init password") {Id = i + 1};
+                var hashedPassword = new PasswordHasher<User>().HashPassword(user, password);
+
+                user.Password = hashedPassword;
+                return user;
+            });
 
         /// <summary>
         /// Generate Fake cards for init db
         /// </summary>
-        /// <param name="user"></param>
+        /// <param name="users">List of the Users</param>
         /// <returns>Enumerable of Fake Cards</returns>
-        public static IEnumerable<Card> GenerateFakeCards(User user)
+        public static IEnumerable<Card> GenerateFakeCards(IEnumerable<User> users)
         {
             var date = DateTime.Today.AddYears(-2);
+
             // create fake cards
-            var cards = new List<Card>
+            var cards = new List<Card>();
+            var id = 1;
+
+            foreach (var user in users)
             {
-                new Card
+                var cardsForUser = new List<Card>
                 {
-                    Id = 1,
-                    UserId = user.Id,
-                    CardNumber = "6271190189011743",
-                    CardName = "my salary",
-                    Currency = Currency.RUR,
-                    CardType = CardType.VISA,
-                    DtOpenCard = date
-                },
-                new Card
-                {
-                    Id = 2,
-                    UserId = user.Id,
-                    CardNumber = "6762302693240520",
-                    CardName = "my salary",
-                    Currency = Currency.RUR,
-                    CardType = CardType.MAESTRO,
-                    DtOpenCard = date
-                },
-                new Card
-                {
-                    Id = 3,
-                    UserId = user.Id,
-                    CardNumber = "4083967629457310",
-                    CardName = "my debt",
-                    Currency = Currency.EUR,
-                    CardType = CardType.VISA,
-                    DtOpenCard = date
-                },
-                new Card
-                {
-                    Id = 4,
-                    UserId = user.Id,
-                    CardNumber = "5101265622568232",
-                    CardName = "for my lovely wife",
-                    Currency = Currency.USD,
-                    CardType = CardType.MASTERCARD,
-                    DtOpenCard = date
-                }
-            };
+                    new Card
+                    {
+                        Id = id++,
+                        UserId = user.Id,
+                        CardNumber = AlfaCardNumberGenerator.GenerateNewCardNumber(CardType.VISA),
+                        CardName = "my salary",
+                        Currency = Currency.RUR,
+                        CardType = CardType.VISA,
+                        DtOpenCard = date
+                    },
+                    new Card
+                    {
+                        Id = id++,
+                        UserId = user.Id,
+                        CardNumber = AlfaCardNumberGenerator.GenerateNewCardNumber(CardType.MAESTRO),
+                        CardName = "my salary",
+                        Currency = Currency.RUR,
+                        CardType = CardType.MAESTRO,
+                        DtOpenCard = date
+                    },
+                    new Card
+                    {
+                        Id = id++,
+                        UserId = user.Id,
+                        CardNumber = AlfaCardNumberGenerator.GenerateNewCardNumber(CardType.VISA),
+                        CardName = "my debt",
+                        Currency = Currency.EUR,
+                        CardType = CardType.VISA,
+                        DtOpenCard = date
+                    },
+                    new Card
+                    {
+                        Id = id++,
+                        UserId = user.Id,
+                        CardNumber = AlfaCardNumberGenerator.GenerateNewCardNumber(CardType.MASTERCARD),
+                        CardName = "for my family",
+                        Currency = Currency.USD,
+                        CardType = CardType.MASTERCARD,
+                        DtOpenCard = date
+                    }
+                };
+
+                cards.AddRange(cardsForUser);
+            }
 
             return cards;
         }

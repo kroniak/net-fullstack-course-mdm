@@ -44,6 +44,6 @@ namespace AlfaBank.Core.Data.Repositories
                 .FirstOrDefault();
 
         /// <inheritdoc />
-        public int Count(User user) => Get(c => c.User.Id == user.Id).Count();
+        public int Count() => Get().Count();
     }
 }

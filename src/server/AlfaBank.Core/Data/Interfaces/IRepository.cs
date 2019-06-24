@@ -13,6 +13,13 @@ namespace AlfaBank.Core.Data.Interfaces
         /// <summary>
         /// Get Entities by expressions
         /// </summary>
+        /// <param name="noTracking">flag is noTracking</param>
+        /// <returns>Enumerable of Entities</returns>
+        IQueryable<TEntity> Get(bool noTracking = true);
+
+        /// <summary>
+        /// Get Entities by expressions
+        /// </summary>
         /// <param name="predicate">filter</param>
         /// <param name="noTracking">flag is noTracking</param>
         /// <returns>Enumerable of Entities</returns>

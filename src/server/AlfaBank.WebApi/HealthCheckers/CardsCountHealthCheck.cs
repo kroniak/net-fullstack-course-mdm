@@ -17,17 +17,14 @@ namespace AlfaBank.WebApi.HealthCheckers
     public class CardsCountHealthCheck : IHealthCheck
     {
         private readonly ICardRepository _repository;
-        private readonly IUserRepository _userRepository;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CardsCountHealthCheck"/> class.
         /// <param name="repository">ICardRepository instance</param>
-        /// <param name="userRepository">IUserRepository instance</param>
         /// </summary>
-        public CardsCountHealthCheck(ICardRepository repository, IUserRepository userRepository)
+        public CardsCountHealthCheck(ICardRepository repository)
         {
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(_userRepository));
         }
 
         /// <inheritdoc />
@@ -35,8 +32,7 @@ namespace AlfaBank.WebApi.HealthCheckers
             HealthCheckContext context,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var user = _userRepository.GetCurrentUser("admin@admin.ru");
-            var count = _repository.Count(user);
+            var count = _repository.Count();
 
             if (count > 0)
             {

@@ -16,6 +16,8 @@ using Server.Test.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 // ReSharper disable PossibleMultipleEnumeration
@@ -60,6 +62,11 @@ namespace Server.Test.Controllers
 
             var objectValidatorMock = GetMockObjectValidator();
 
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "alice@alfabank.ru")
+            }, "mock"));
+
             _controller = new TransactionsController(
                 _dtoValidationServiceMock.Object,
                 _userRepositoryMock.Object,
@@ -69,7 +76,14 @@ namespace Server.Test.Controllers
                 _dtoFactoryMock.Object,
                 new Mock<ILogger<TransactionsController>>().Object)
             {
-                ObjectValidator = objectValidatorMock.Object
+                ObjectValidator = objectValidatorMock.Object,
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext
+                    {
+                        User = user
+                    }
+                }
             };
         }
 
@@ -163,7 +177,7 @@ namespace Server.Test.Controllers
         public void GetTransactions_UserNotFound_ReturnForbidResult(string value)
         {
             //Assert 
-            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), true)).Returns((User) null);
+            _userRepositoryMock.Setup(u => u.GetUser(It.IsAny<string>(), true)).Returns((User) null);
 
             var result = (ForbidResult) _controller.Get(value).Result;
 
@@ -191,7 +205,7 @@ namespace Server.Test.Controllers
         public void PostTransactions_UserNotFound_ReturnForbidResult()
         {
             //Assert 
-            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), true)).Returns((User) null);
+            _userRepositoryMock.Setup(u => u.GetUser(It.IsAny<string>(), true)).Returns((User) null);
             var fakeCardFrom = _fakeCards.First();
             var fakeCardTo = _fakeCards.ElementAt(1);
 
@@ -468,7 +482,7 @@ namespace Server.Test.Controllers
         public void Dispose()
         {
             if (_isUserCall)
-                _userRepositoryMock.Verify(u => u.GetCurrentUser("admin@admin.ru", It.IsAny<bool>()), Times.Once);
+                _userRepositoryMock.Verify(u => u.GetUser("alice@alfabank.ru", It.IsAny<bool>()), Times.Once);
         }
     }
 }

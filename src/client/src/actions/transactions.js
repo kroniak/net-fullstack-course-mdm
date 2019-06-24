@@ -10,13 +10,18 @@ import {ROOT_URL} from "./consts";
 export const fetchTransactions = (number, skip = 0) => {
     const skipParam = skip <= 0 ? "" : `?skip=${skip}`;
 
-    return dispatch => {
+    return (dispatch, getState) => {
+        const {isAuth, token} = getState().auth;
+        if (!isAuth || !token) return;
+
         dispatch({
             type: TRANS_FETCH_STARTED
         });
 
         axios
-            .get(`${ROOT_URL}/transactions/${number}${skipParam}`)
+            .get(`${ROOT_URL}/transactions/${number}${skipParam}`, {
+                headers: {'Authorization': "Bearer " + token}
+            })
             .then(response => {
                 if (response.status === 200) {
                     dispatch({

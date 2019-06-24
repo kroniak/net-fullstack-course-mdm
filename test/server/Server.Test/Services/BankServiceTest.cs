@@ -322,7 +322,7 @@ namespace Server.Test.Services
             _validationBlServiceMock.Verify(b => b.ValidateTransfer(from, to, sum), Times.Once);
             _currencyConverterMock.Verify(
                 b => b.GetConvertedSum(sum, from.Currency, to.Currency),
-                Times.Once);            
+                Times.Once);
             _cardRepositoryMock.Verify(c => c.Save(), Times.Once);
 
             Assert.Empty(errors);
@@ -445,7 +445,7 @@ namespace Server.Test.Services
 
             Assert.Null(result);
         }
-        
+
         [Fact]
         public void TryTransferMoney_EqualsCards_ReturnError()
         {

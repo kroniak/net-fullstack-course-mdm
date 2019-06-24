@@ -34,7 +34,7 @@ namespace Server.Test.Data
             _cardRepository = new CardRepository(_context);
 
             _card = _context.Cards.First();
-            _user = _context.Users.FirstOrDefault(u => u.UserName == "admin@admin.ru");
+            _user = _context.Users.FirstOrDefault(u => u.UserName == "alice@alfabank.ru");
         }
 
         [Fact]

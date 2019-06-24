@@ -12,15 +12,12 @@ using Serilog.Core.Enrichers;
 using Serilog.Enrichers.AspNetCore.HttpContext;
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Reflection;
 using AlfaBank.Core.Data;
 using AlfaBank.WebApi.HostedServices;
+using AlfaBank.WebApi.Services;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Swashbuckle.AspNetCore.SwaggerGen;
 
 // ReSharper disable UnusedMember.Global
 
@@ -54,18 +51,17 @@ namespace AlfaBank.WebApi
             services.AddAutoMapper(options => options.AddProfile<DomainToDtoProfile>());
 
             // Add db
-            services.AddDbContext<SqlContext>(
-                options =>
-                {
-                    options.UseLoggerFactory(_loggerFactory);
-                    options.UseSqlite(
-                        _configuration.GetConnectionString("sqlite"),
-                        b => b.MigrationsAssembly("AlfaBank.WebApi"));
-                });
+            services.AddDbContext<SqlContext>(options =>
+            {
+                options.UseLoggerFactory(_loggerFactory);
+                options.UseSqlite(
+                    _configuration.GetConnectionString("sqlite"),
+                    b => b.MigrationsAssembly("AlfaBank.WebApi"));
+            });
 
             // Add owns services
-            services
-                .AddAlfaBankServices();
+            services.AddAlfaBankServices();
+            services.AddScoped<ISimpleAuthenticateService, SimpleAuthenticateService>();
 
             // Add Background service
             services.AddHostedService<TariffHostedService>();
@@ -74,40 +70,7 @@ namespace AlfaBank.WebApi
             services.AddMvc(options => options.EnableEndpointRouting = true)
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-            services.AddApiVersioning(
-                options =>
-                {
-                    options.AssumeDefaultVersionWhenUnspecified = true;
-                    options.DefaultApiVersion = new ApiVersion(1, 0);
-                    // reporting api versions will return the headers "api-supported-versions" and "api-deprecated-versions"
-                    options.ReportApiVersions = true;
-                });
-
-            services.AddVersionedApiExplorer(
-                options =>
-                {
-                    // add the versioned api explorer, which also adds IApiVersionDescriptionProvider service
-                    // note: the specified format code will format the version as "'v'major[.minor][-status]"
-                    options.GroupNameFormat = "'v'VVV";
-
-                    // note: this option is only necessary when versioning by url segment. the SubstitutionFormat
-                    // can also be used to control the format of the API version in route templates
-                    options.SubstituteApiVersionInUrl = true;
-                });
-
-            services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
-
-            services.AddSwaggerGen(
-                options =>
-                {
-                    // add a custom operation filter which sets default values
-                    options.OperationFilter<SwaggerDefaultValues>();
-
-                    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-                    // integrate xml comments
-                    options.IncludeXmlComments(xmlPath);
-                });
+            services.AddSwagger();
 
             // Add custom HealthCheck and UI
             services
@@ -117,8 +80,14 @@ namespace AlfaBank.WebApi
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowMyOrigin",
-                    builder => builder.WithOrigins("http://localhost:3000"));
+                    builder =>
+                        builder
+                            .WithOrigins("http://localhost:3000")
+                            .AllowAnyMethod()
+                            .AllowAnyHeader());
             });
+
+            services.AddCustomAuthentication(_configuration);
         }
 
         /// <summary>
@@ -159,6 +128,8 @@ namespace AlfaBank.WebApi
                 });
 
             app.UseCustomHealthCheckEndpoints();
+
+            app.UseAuthentication();
 
             app.UseCors("AllowMyOrigin");
             app.UseMvc();

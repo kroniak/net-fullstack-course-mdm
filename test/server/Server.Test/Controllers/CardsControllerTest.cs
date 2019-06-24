@@ -17,6 +17,8 @@ using Server.Test.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Xunit;
 
 // ReSharper disable PossibleMultipleEnumeration
@@ -60,9 +62,14 @@ namespace Server.Test.Controllers
             _userRepositoryMock = new UserRepositoryMockFactory(_user).Mock();
             _cardRepositoryMock = new CardsRepositoryMockFactory(_user).Mock();
 
-            _userRepositoryMock.Setup(u => u.GetCurrentUser("admin@admin.ru", It.IsAny<bool>())).Returns(_user);
+            _userRepositoryMock.Setup(u => u.GetUser("alice@alfabank.ru", It.IsAny<bool>())).Returns(_user);
 
             var objectValidatorMock = GetMockObjectValidator();
+
+            var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
+            {
+                new Claim(ClaimTypes.Name, "alice@alfabank.ru")
+            }, "mock"));
 
             _controller = new CardsController(
                 _dtoValidationServiceMock.Object,
@@ -73,7 +80,14 @@ namespace Server.Test.Controllers
                 _dtoFactoryMock.Object,
                 new Mock<ILogger<CardsController>>().Object)
             {
-                ObjectValidator = objectValidatorMock.Object
+                ObjectValidator = objectValidatorMock.Object,
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = new DefaultHttpContext
+                    {
+                        User = user
+                    }
+                }
             };
         }
 
@@ -108,12 +122,12 @@ namespace Server.Test.Controllers
 
             Assert.Equal(200, result.StatusCode);
         }
-        
+
         [Fact]
         public void GetCards_UserNotFound_ReturnForbidResult()
         {
             // Arrange
-            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), true)).Returns((User) null);
+            _userRepositoryMock.Setup(u => u.GetUser(It.IsAny<string>(), true)).Returns((User) null);
 
             // Act
             var result = (ForbidResult) _controller.Get().Result;
@@ -149,7 +163,7 @@ namespace Server.Test.Controllers
         {
             // Arrange
             var fakeCard = GetCard_ValidData();
-            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), true)).Returns((User) null);
+            _userRepositoryMock.Setup(u => u.GetUser(It.IsAny<string>(), true)).Returns((User) null);
 
             // Act
             var result = (ForbidResult) _controller.Get(fakeCard.CardNumber).Result;
@@ -245,13 +259,13 @@ namespace Server.Test.Controllers
             Assert.Equal(404, result.StatusCode);
             Assert.Null(getResult.Value);
         }
-        
+
         [Fact]
         public void PostCard_UserNotFound_ReturnForbidResult()
         {
             // Arrange
             var cardDto = PostCard_ValidDto();
-            _userRepositoryMock.Setup(u => u.GetCurrentUser(It.IsAny<string>(), false)).Returns((User) null);
+            _userRepositoryMock.Setup(u => u.GetUser(It.IsAny<string>(), false)).Returns((User) null);
 
             // Act
             var result = (ForbidResult) _controller.Post(cardDto).Result;
@@ -569,7 +583,7 @@ namespace Server.Test.Controllers
         public void Dispose()
         {
             if (_isUserCall)
-                _userRepositoryMock.Verify(u => u.GetCurrentUser("admin@admin.ru", It.IsAny<bool>()), Times.Once);
+                _userRepositoryMock.Verify(u => u.GetUser("alice@alfabank.ru", It.IsAny<bool>()), Times.Once);
         }
     }
 }

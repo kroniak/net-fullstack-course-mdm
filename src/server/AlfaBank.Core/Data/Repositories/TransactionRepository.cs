@@ -24,6 +24,7 @@ namespace AlfaBank.Core.Data.Repositories
                         t.Card.User.Id == user.Id,
                     true,
                     t => t.Card)
+                .OrderBy(t => t.Id)
                 .Skip(skip)
                 .Take(take)
                 .ToArray();

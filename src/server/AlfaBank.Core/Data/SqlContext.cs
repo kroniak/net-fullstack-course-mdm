@@ -42,11 +42,11 @@ namespace AlfaBank.Core.Data
             // Init Data
             var users = FakeDataGenerator.GenerateFakeUsers(new[]
             {
-                "admin@admin.ru",
-                "user@user.ru"
+                "alice@alfabank.ru",
+                "bob@alfabank.ru"
             }).ToArray();
 
-            var cards = FakeDataGenerator.GenerateFakeCards(users[0]).ToArray();
+            var cards = FakeDataGenerator.GenerateFakeCards(users).ToArray();
             var transactions = FakeDataGenerator.GenerateFakeTransactions(cards).ToArray();
 
             modelBuilder.Entity<User>().HasData(users);

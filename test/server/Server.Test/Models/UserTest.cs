@@ -8,24 +8,26 @@ namespace Server.Test.Models
     public class UserTest
     {
         [Theory]
-        [InlineData(null)]
-        [InlineData(" ")]
-        [InlineData("")]
-        public void User_NullEmail_ThrowException(string s) => Assert.Throws<CriticalException>(() => new User(s));
+        [InlineData(null, null)]
+        [InlineData(" ", " ")]
+        [InlineData("", "")]
+        public void User_NullEmail_ThrowException(string username, string password) =>
+            Assert.Throws<CriticalException>(() => new User(username, password));
 
         [Theory]
         [InlineData("admin")]
         [InlineData("admin@")]
         public void SetUserEmail_IncorrectEmail_ThrowException(string s) =>
-            Assert.Throws<CriticalException>(() => new User(s));
+            Assert.Throws<CriticalException>(() => new User(s, "123"));
 
         [Fact]
         public void User_CorrectData_ReturnCorrectUser()
         {
             // Act
-            var user = new User("admin@admin.ru");
+            var user = new User("alice@alfabank.ru", "123");
 
-            Assert.Equal("admin@admin.ru", user.UserName);
+            Assert.Equal("alice@alfabank.ru", user.UserName);
+            Assert.Equal("123", user.Password);
             Assert.Null(user.Firstname);
             Assert.Null(user.Surname);
             Assert.Null(user.Birthday);
@@ -41,14 +43,14 @@ namespace Server.Test.Models
             var birthday = DateTime.Today;
 
             // Act
-            var user = new User("admin@admin.ru")
+            var user = new User("alice@alfabank.ru", "123")
             {
                 Firstname = firstname,
                 Surname = surname,
                 Birthday = birthday
             };
 
-            Assert.Equal("admin@admin.ru", user.UserName);
+            Assert.Equal("alice@alfabank.ru", user.UserName);
             Assert.Equal(firstname, user.Firstname);
             Assert.Equal(surname, user.Surname);
             Assert.Equal(birthday, user.Birthday);

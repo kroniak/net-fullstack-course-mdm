@@ -31,6 +31,12 @@ namespace AlfaBank.Core.Data.Repositories
         public void Add(TEntity entity) => _collection.Add(entity);
 
         /// <inheritdoc />
+        public IQueryable<TEntity> Get(bool noTracking = true)
+            => noTracking
+                ? _queryableAsNoTracking
+                : _collection;
+
+        /// <inheritdoc />
         public IQueryable<TEntity> Get(Expression<Func<TEntity, bool>> predicate, bool noTracking = true)
             => (noTracking
                     ? _queryableAsNoTracking

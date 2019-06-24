@@ -31,7 +31,7 @@ namespace Server.Test.Data
             _transactionsRepository = new TransactionRepository(_context);
 
             _card = _context.Cards.First();
-            _user = _context.Users.FirstOrDefault(u => u.UserName == "admin@admin.ru");
+            _user = _context.Users.FirstOrDefault(u => u.UserName == "alice@alfabank.ru");
         }
 
         [Fact]
