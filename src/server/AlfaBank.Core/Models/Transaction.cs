@@ -39,6 +39,7 @@ namespace AlfaBank.Core.Models
         /// </summary>
         /// <returns><see langword="decimal"/>representation of the sum transaction</returns>
         [Required]
+        [Column(TypeName = "decimal(16, 2)")]
         public decimal Sum { get; set; }
 
         /// <summary>

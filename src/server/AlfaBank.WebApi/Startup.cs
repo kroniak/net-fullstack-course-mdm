@@ -54,12 +54,13 @@ namespace AlfaBank.WebApi
             services.AddDbContext<SqlContext>(options =>
             {
                 options.UseLoggerFactory(_loggerFactory);
-                options.UseSqlite(
-                    _configuration.GetConnectionString("sqlite"),
+                options.UseSqlServer(
+                    _configuration.GetConnectionString("DB"),
                     b => b.MigrationsAssembly("AlfaBank.WebApi"));
             });
 
             // Add owns services
+            services.AddMemoryCache();
             services.AddAlfaBankServices();
             services.AddScoped<ISimpleAuthenticateService, SimpleAuthenticateService>();
 

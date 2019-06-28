@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AlfaBank.Core.Data.Interfaces;
@@ -78,7 +79,8 @@ namespace AlfaBank.WebApi.HostedServices
             _logger.LogInformation("Tariff Background Service is started process.");
 
             var cards = repository.GetWithInclude(
-                _ => true, false, c => c.Transactions);
+                    _ => true, false, c => c.Transactions)
+                .ToArray();
 
             foreach (var card in cards)
             {

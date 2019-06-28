@@ -8,6 +8,8 @@ using Server.Test.Utils;
 using System.Linq;
 using AlfaBank.Core.Data.Repositories;
 using AlfaBank.Core.Infrastructure;
+using Microsoft.Extensions.Caching.Memory;
+using Moq;
 using Xunit;
 
 // ReSharper disable PossibleMultipleEnumeration
@@ -31,10 +33,22 @@ namespace Server.Test.Data
 
             _context = SqlContextMock.GetSqlContext();
 
-            _cardRepository = new CardRepository(_context);
+            _cardRepository = new CardRepository(_context, GetMemoryCache(null));
 
             _card = _context.Cards.First();
             _user = _context.Users.FirstOrDefault(u => u.UserName == "alice@alfabank.ru");
+        }
+
+        private static IMemoryCache GetMemoryCache(object expectedValue)
+        {
+            var mockMemoryCache = new Mock<IMemoryCache>();
+            mockMemoryCache
+                .Setup(x => x.TryGetValue(It.IsAny<object>(), out expectedValue))
+                .Returns(false);
+            mockMemoryCache
+                .Setup(x => x.CreateEntry(It.IsAny<object>()))
+                .Returns(new Mock<ICacheEntry>().Object);
+            return mockMemoryCache.Object;
         }
 
         [Fact]

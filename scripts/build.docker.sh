@@ -12,4 +12,6 @@ docker build -t alfabank-service:latest "$SCRIPT_ROOT/.."
 
 docker build -t alfabank-service-cli:latest "$SCRIPT_ROOT/../src/client"
 
+docker build -t alfabank-balancer:latest "$SCRIPT_ROOT/../src/nginx"
+
 docker rmi -f $(docker images -q --filter "dangling=true")
