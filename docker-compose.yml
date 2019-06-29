@@ -1,0 +1,58 @@
+version: '3.0'
+services:
+  elk:
+    image: sebp/elk
+    container_name: alfabank-elk-prod
+    ports:
+      - "5601:5601"
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2017-latest
+    container_name: alfabank-db-prod
+    ports:
+      - "1433:1433"
+    environment: 
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=KexibqGfhjkm123
+    
+  service1:
+    image: alfabank-service
+    container_name: alfabank-service-prod-1
+    depends_on:
+      - elk
+      - db
+    links:
+      - elk
+      - db
+    volumes:
+      - /tmp/alfabank-service-logs/1:/app/logs
+  
+  service2:
+    image: alfabank-service
+    container_name: alfabank-service-prod-2
+    depends_on:
+      - elk
+      - db
+    links:
+      - elk
+      - db
+    volumes:
+      - /tmp/alfabank-service-logs/2:/app/logs
+
+  balancer:
+    image: alfabank-balancer
+    container_name: alfabank-balancer-prod
+    depends_on:
+      - service1
+      - service2
+    links:
+      - service1
+      - service2
+    ports:
+      - "5001:5001"
+
+  cli:
+    image: alfabank-service-cli
+    container_name: alfabank-service-cli-prod
+    ports:
+      - "3000:3000"
