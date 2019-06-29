@@ -38,12 +38,12 @@ class Header extends React.Component {
                 </Title>
             );
         }
-    }
+    };
 
     render() {
         return (
             <HeaderLayout>
-                <Authenticated>{this.renderBalance()}</Authenticated>
+                <Authenticated isAuth={this.props.isAuth}>{this.renderBalance()}</Authenticated>
                 <Title>Электронный кошелек</Title>
                 <UserInfo/>
             </HeaderLayout>

@@ -6,11 +6,12 @@ import styled from "@emotion/styled";
 import History from "./history";
 import Payment from "../payment/payment";
 
-import {fetchCards} from "../../actions/cards";
 import {fetchTransactions} from "../../actions/transactions";
 import {getActiveCard, isExpiredCard} from "../../selectors/cards";
 import {getTransactionsByDays} from "../../selectors/transactions";
 import Authenticated from "../auth/authenticated";
+import LoginContract from "./login_contract";
+import {logUser, verifyToken} from "../../actions/auth";
 
 const Workspace = styled.div`
   display: flex;
@@ -22,7 +23,7 @@ const Workspace = styled.div`
 
 class Home extends Component {
     componentDidMount() {
-        this.props.fetchCards();
+        this.props.verifyToken();
     }
 
     render() {
@@ -32,13 +33,15 @@ class Home extends Component {
             transactionsIsLoading,
             transactionsSkip,
             transactionsCount,
-            fetchTransactions
+            fetchTransactions,
+            isAuth,
+            logUser
         } = this.props;
 
         if (activeCard)
             return (
                 <Workspace>
-                    <Authenticated>
+                    <Authenticated isAuth={isAuth}>
                         {isExpiredCard(activeCard.exp) ? (
                             <h1 style={{margin: "15px", fontWeight: "bold"}}>
                                 <span role="img">❌</span> Срок действия карты истёк
@@ -56,7 +59,9 @@ class Home extends Component {
                     </Authenticated>
                 </Workspace>
             );
-        else return <Workspace/>;
+        else return (<Workspace>
+            {!isAuth && <LoginContract logUser={logUser}/>}
+        </Workspace>);
     }
 }
 
@@ -77,7 +82,8 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-    fetchCards: () => dispatch(fetchCards()),
+    verifyToken: () => dispatch(verifyToken()),
+    logUser: (userName, password) => dispatch(logUser(userName, password)),
     fetchTransactions: (number, skip) => dispatch(fetchTransactions(number, skip))
 });
 

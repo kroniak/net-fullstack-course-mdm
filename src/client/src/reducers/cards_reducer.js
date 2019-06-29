@@ -5,7 +5,8 @@ import {
     CARD_FETCH_SUCCESS,
     CARDS_FETCH_FAILED,
     CARDS_FETCH_STARTED,
-    CARDS_FETCH_SUCCESS, USER_LOGOUT
+    CARDS_FETCH_SUCCESS,
+    USER_LOGOUT
 } from "../actions/types";
 
 /**
@@ -35,7 +36,8 @@ const initialState = {
 
 export default (state = initialState, {type, payload}) => {
     switch (type) {
-        case USER_LOGOUT: return initialState;
+        case USER_LOGOUT:
+            return initialState;
 
         case CARDS_FETCH_STARTED:
             return {

@@ -1,9 +1,11 @@
-﻿using AlfaBank.Core.Data.Interfaces;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using AlfaBank.Core.Models.Dto;
+using AlfaBank.WebApi.Middleware;
+using AlfaBank.WebApi.Services;
 using Microsoft.AspNetCore.Authorization;
 
 // ReSharper disable PossibleMultipleEnumeration
@@ -11,68 +13,75 @@ namespace AlfaBank.WebApi.Controllers
 {
     /// <inheritdoc />
     [ApiController]
-    [ApiVersion("1.0")]
     [Produces("application/json")]
-    [Route("api/v{version:apiVersion}/[controller]")]
     [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     [BindProperties]
-    [AllowAnonymous]
+    [Authorize]
     public class AuthController : ControllerBase
     {
-        private readonly IUserRepository _userRepository;
+        private readonly ISimpleAuthenticateService _authenticateService;
         private readonly ILogger<AuthController> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CardsController"/> class.
         /// </summary>
-        /// <param name="userRepository">User Repository</param>
+        /// <param name="authenticateService"></param>
         /// <param name="logger">Current Logger</param>
         [ExcludeFromCodeCoverage]
         public AuthController(
-            IUserRepository userRepository,
+            ISimpleAuthenticateService authenticateService,
             ILogger<AuthController> logger)
         {
-            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
+            _authenticateService = authenticateService ?? throw new ArgumentNullException(nameof(authenticateService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
-        // GET api/auth/login
+        // POST /auth/login
         /// <summary>
         /// Login user
         /// </summary>
         /// <returns>A `string` type with token</returns>
         /// <response code="200">Login user successfully</response>
-        [HttpPost("login")]
+        [Route("/auth/login")]
+        [HttpPost]
         [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public ActionResult<string> Login()
+        [ProducesDefaultResponseType]
+        [AllowAnonymous]
+        public ActionResult<string> Login([FromBody] UserDto userDto)
         {
             // try to validate user model
+            if (!ModelState.IsValid)
+            {
+                _logger.LogStateWarning("This login model is invalid.", ModelState);
+                return BadRequest(ModelState);
+            }
 
             // try to verify user data
+            var token = _authenticateService.CheckUserCredentials(userDto.Username, userDto.Password);
 
-            // generate token
+            if (token == null)
+            {
+                _logger.LogWarning("Authenticating is failed.");
+                return Unauthorized();
+            }
 
             // Return
-            return Ok();
+            return Ok(new {token});
         }
 
-        // GET api/auth/login
+        // POST /auth/login
         /// <summary>
-        /// Logout user
+        /// Verify user JWT
         /// </summary>
-        /// <response code="200">Logout user successfully</response>
-        [HttpPost("logout")]
-        [ProducesResponseType(typeof(string), StatusCodes.Status200OK)]
-        public IActionResult Logout()
+        /// <response code="200">Login user successfully</response>
+        [Route("/auth/verify")]
+        [HttpGet]
+        [ProducesResponseType(typeof(ActionResult), StatusCodes.Status200OK)]
+        [ProducesDefaultResponseType]
+        public ActionResult Verify()
         {
-            // try to validate model
-
-            // try to verify user data
-
-            // delete token
-
             // Return
-            return Ok();
+            return Ok(new {userName = User.Identity.Name});
         }
     }
 }

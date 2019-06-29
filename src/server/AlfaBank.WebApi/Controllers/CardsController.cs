@@ -80,7 +80,7 @@ namespace AlfaBank.WebApi.Controllers
         public ActionResult<IEnumerable<CardGetDto>> Get()
         {
             // Select
-            var user = _userRepository.GetCurrentUser("admin@admin.ru");
+            var user = _userRepository.GetUser(User.Identity.Name);
 
             if (user == null)
             {
@@ -124,7 +124,7 @@ namespace AlfaBank.WebApi.Controllers
             }
 
             // Select
-            var user = _userRepository.GetCurrentUser("admin@admin.ru");
+            var user = _userRepository.GetUser(User.Identity.Name);
 
             if (user == null)
             {
@@ -184,7 +184,7 @@ namespace AlfaBank.WebApi.Controllers
             }
 
             // Select
-            var user = _userRepository.GetCurrentUser("admin@admin.ru", false);
+            var user = _userRepository.GetUser(User.Identity.Name, false);
 
             if (user == null)
             {

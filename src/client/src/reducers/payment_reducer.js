@@ -8,7 +8,8 @@ const initialState = {
 
 export default (state = initialState, {type, payload}) => {
     switch (type) {
-        case USER_LOGOUT: return initialState;
+        case USER_LOGOUT:
+            return initialState;
 
         case PAYMENT_REPEAT:
             return initialState;

@@ -91,7 +91,7 @@ class CardsBar extends Component {
 
         return (
             <Layout>
-                <Authenticated>
+                <Authenticated isAuth={this.props.isAuth}>
                     <CardsList>
                         {this.renderCards()}
                         {isLoading ? (
