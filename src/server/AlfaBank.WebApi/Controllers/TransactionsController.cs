@@ -98,7 +98,7 @@ namespace AlfaBank.WebApi.Controllers
             }
 
             // Select
-            var user = _userRepository.GetCurrentUser("admin@admin.ru");
+            var user = _userRepository.GetUser(User.Identity.Name);
 
             if (user == null)
             {
@@ -152,7 +152,7 @@ namespace AlfaBank.WebApi.Controllers
             }
 
             // Work
-            var user = _userRepository.GetCurrentUser("admin@admin.ru");
+            var user = _userRepository.GetUser(User.Identity.Name);
 
             if (user == null)
             {

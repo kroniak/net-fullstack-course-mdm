@@ -1,4 +1,4 @@
 export default (props) => {
-    if (props.isAuth) return props.children;
+    if (props.isAuth && props.children) return props.children;
     else return null;
 };
