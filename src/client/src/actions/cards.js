@@ -74,10 +74,9 @@ export const fetchCards = () => (dispatch, getState) => {
 
         axios
             .get(`${ROOT_URL}/cards`, {
-                params: {
-                    key: token
+                    headers: {'Authorization': "Bearer " + token}
                 }
-            })
+            )
             .then(response => {
                     if (response.status === 200) {
                         dispatch({
@@ -112,9 +111,16 @@ export const fetchCards = () => (dispatch, getState) => {
  *
  * @param {String} number
  */
-export const fetchCard = number => dispatch => {
+export const fetchCard = number => (dispatch, getState) => {
+    const {isAuth, token} = getState().auth;
+    if (!isAuth || !token) return;
+
     axios
-        .get(`${ROOT_URL}/cards/${number}`)
+        .get(`${ROOT_URL}/cards/${number}`, {
+            headers: {
+                'Authorization': "Bearer " + token
+            }
+        })
         .then(response => {
             if (response.status === 200) {
                 dispatch({
