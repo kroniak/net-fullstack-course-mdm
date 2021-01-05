@@ -6,7 +6,7 @@
     "@emotion/core": "^10.0.10",
     "@emotion/styled": "^10.0.12",
     "antd": "^3.19.3",
-    "axios": "^0.19.0",
+    "axios": "^0.21.1",
     "card-info": "git+https://github.com/kroniak/card-info.git",
     "moment": "^2.24.0",
     "prop-types": "^15.7.2",
